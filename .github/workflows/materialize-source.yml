@@ -1,0 +1,39 @@
+name: Materialize Rede Conecta source
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "bundle/**"
+      - ".github/workflows/materialize-source.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  materialize:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Restore source tree
+        shell: bash
+        run: |
+          set -euo pipefail
+          cat bundle/part-* | base64 --decode > /tmp/rede-conecta.tar.gz
+          tar -xzf /tmp/rede-conecta.tar.gz -C .
+          rm -rf bundle
+          rm -f .github/workflows/materialize-source.yml
+
+      - name: Commit published source
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "Rede Conecta Publisher"
+          git config user.email "franco@evoraurbanismo.com.br"
+          git add -A
+          git commit -m "feat: publish Rede Conecta MVP" || exit 0
+          git push origin main
