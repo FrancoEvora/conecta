@@ -8,7 +8,9 @@ const ALLOWED_CHANNELS = new Set(["copy", "whatsapp", "native", "other"]);
 function cleanMetadata(eventType, metadata) {
   if (!metadata || typeof metadata !== "object" || Array.isArray(metadata)) return {};
   if (eventType !== "share") return {
-    path: String(metadata.path || "").slice(0, 240)
+    path: String(metadata.path || "").slice(0, 240),
+    alternative: Boolean(metadata.alternative),
+    source: String(metadata.source || "public_invitation").slice(0, 60)
   };
 
   const channel = ALLOWED_CHANNELS.has(metadata.channel) ? metadata.channel : "other";
