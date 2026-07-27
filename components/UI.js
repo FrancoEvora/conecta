@@ -1,5 +1,11 @@
 import Link from "next/link";
 
+const INVITATION_CODES = {
+  solaris: "SOLARIS-FRANCO-2026",
+  "parque-comercial": "PARQUE-FRANCO-2026",
+  "futura-casa": "FUTURA-FRANCO-2026"
+};
+
 export function NetworkMark({ inverse = false, compact = false }) {
   return <Link href="/" className={`brand ${inverse ? "brand--inverse" : ""}`} aria-label="Rede Conecta">
     <svg className="brand__mark" viewBox="0 0 64 64" aria-hidden="true">
@@ -52,11 +58,13 @@ export function Footer() {
 
 export function ProductCard({ product, featured = false }) {
   const meta = product.product_metadata || {};
+  const invitationCode = product.invitation_code || INVITATION_CODES[product.product_slug];
+  const productHref = invitationCode ? `/convite/${encodeURIComponent(invitationCode)}` : "/cadastro";
   return <article className={`product-card ${featured ? "product-card--featured" : ""}`}>
     <div className="product-card__image" style={{ backgroundImage: `linear-gradient(180deg,transparent 45%,rgba(7,28,58,.74)),url('${meta.image || "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1200&q=82"}')` }}><span>{product.product_category}</span></div>
     <div className="product-card__body"><small>{product.campaign_location || meta.location}</small><h3>{product.product_name}</h3><p>{product.product_description}</p>
       <ul>{(meta.features || []).slice(0, 3).map(item => <li key={item}><Icon name="check" size={16}/>{item}</li>)}</ul>
-      <div className="product-card__footer"><span><b>{meta.area_from || "Oportunidade selecionada"}</b><small>{meta.payment || "Condições sob consulta"}</small></span><Link className="button button--navy" href={product.product_slug === "solaris" ? "/convite/SOLARIS-FRANCO-2026" : "/cadastro"}>Conhecer <Icon name="arrow" size={18}/></Link></div>
+      <div className="product-card__footer"><span><b>{meta.area_from || "Oportunidade selecionada"}</b><small>{meta.payment || "Condições sob consulta"}</small></span><Link className="button button--navy" href={productHref}>Conhecer <Icon name="arrow" size={18}/></Link></div>
     </div>
   </article>;
 }
