@@ -99,7 +99,7 @@ export default async function OpenGraphImage({ params }) {
         </div>
 
         <div style={{ display: "flex", alignItems: "center", gap: "12px", fontSize: "18px", color: "rgba(255,255,255,.82)" }}>
-          <div style={{ width: "30px", height: "30px", display: "flex", alignItems: "center", justifyContent: "center", borderRadius: "50%", background: "#16865c", fontWeight: 900 }}>✓</div>
+          <div style={{ width: "34px", height: "30px", display: "flex", alignItems: "center", justifyContent: "center", borderRadius: "999px", background: "#16865c", fontSize: "13px", fontWeight: 900 }}>OK</div>
           <span>Produto de origem preservado · contato somente após autorização</span>
         </div>
       </div>
