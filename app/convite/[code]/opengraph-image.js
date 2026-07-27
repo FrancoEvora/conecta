@@ -68,8 +68,8 @@ export default async function OpenGraphImage({ params }) {
             <div style={{ width: "24px", height: "24px", display: "flex", borderRadius: "50%", background: "white" }}/>
           </div>
           <div style={{ display: "flex", flexDirection: "column" }}>
-            <div style={{ fontSize: "31px", fontWeight: 900, letterSpacing: "-1.4px" }}>
-              REDE <span style={{ color: "#ff7420" }}>CONECTA</span>
+            <div style={{ display: "flex", alignItems: "baseline", gap: "8px", fontSize: "31px", fontWeight: 900, letterSpacing: "-1.4px" }}>
+              <span>REDE</span><span style={{ color: "#ff7420" }}>CONECTA</span>
             </div>
             <div style={{ fontSize: "16px", opacity: .76 }}>Conectando Pessoas e Negócios</div>
           </div>
@@ -100,7 +100,7 @@ export default async function OpenGraphImage({ params }) {
 
         <div style={{ display: "flex", alignItems: "center", gap: "12px", fontSize: "18px", color: "rgba(255,255,255,.82)" }}>
           <div style={{ width: "30px", height: "30px", display: "flex", alignItems: "center", justifyContent: "center", borderRadius: "50%", background: "#16865c", fontWeight: 900 }}>✓</div>
-          Produto de origem preservado · contato somente após autorização
+          <span>Produto de origem preservado · contato somente após autorização</span>
         </div>
       </div>
 
@@ -143,7 +143,7 @@ export default async function OpenGraphImage({ params }) {
         </div>)}
         <div style={{ marginTop: "8px", display: "flex", alignItems: "center", gap: "9px", fontSize: "15px", color: "rgba(255,255,255,.78)", position: "relative" }}>
           <div style={{ width: "10px", height: "10px", display: "flex", borderRadius: "50%", background: "#54d397" }}/>
-          conecta-pearl.vercel.app
+          <span>conecta-pearl.vercel.app</span>
         </div>
       </div>
     </div>,
