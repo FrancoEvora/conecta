@@ -71,7 +71,7 @@ export default async function OpenGraphImage({ params }) {
             <div style={{ display: "flex", alignItems: "baseline", gap: "8px", fontSize: "31px", fontWeight: 900, letterSpacing: "-1.4px" }}>
               <span>REDE</span><span style={{ color: "#ff7420" }}>CONECTA</span>
             </div>
-            <div style={{ fontSize: "16px", opacity: .76 }}>Conectando Pessoas e Negócios</div>
+            <div style={{ display: "flex", fontSize: "16px", opacity: .76 }}>Conectando Pessoas e Negócios</div>
           </div>
         </div>
 
@@ -89,13 +89,13 @@ export default async function OpenGraphImage({ params }) {
             letterSpacing: "1.3px",
             textTransform: "uppercase"
           }}>Convite oficial · origem identificada</div>
-          <div style={{ fontSize: "31px", fontWeight: 700, color: "rgba(255,255,255,.78)" }}>
-            {connector} conectou você a:
+          <div style={{ display: "flex", fontSize: "31px", fontWeight: 700, color: "rgba(255,255,255,.78)" }}>
+            <span>{connector} conectou você a:</span>
           </div>
-          <div style={{ fontSize: product.length > 38 ? "55px" : "66px", lineHeight: 1.02, fontWeight: 950, letterSpacing: "-2.7px" }}>
-            {product}
+          <div style={{ display: "flex", fontSize: product.length > 38 ? "55px" : "66px", lineHeight: 1.02, fontWeight: 950, letterSpacing: "-2.7px" }}>
+            <span>{product}</span>
           </div>
-          <div style={{ fontSize: "22px", color: "rgba(255,255,255,.72)" }}>{location}</div>
+          <div style={{ display: "flex", fontSize: "22px", color: "rgba(255,255,255,.72)" }}><span>{location}</span></div>
         </div>
 
         <div style={{ display: "flex", alignItems: "center", gap: "12px", fontSize: "18px", color: "rgba(255,255,255,.82)" }}>
@@ -136,10 +136,10 @@ export default async function OpenGraphImage({ params }) {
           boxShadow: "0 18px 42px rgba(0,0,0,.17)",
           position: "relative"
         }}>
-          <div style={{ color: "#ff9a5c", fontSize: "14px", fontWeight: 900, textTransform: "uppercase", letterSpacing: "1px" }}>
-            {index === 0 ? "Produto" : index === 1 ? "Destaque" : "Condição"}
+          <div style={{ display: "flex", color: "#ff9a5c", fontSize: "14px", fontWeight: 900, textTransform: "uppercase", letterSpacing: "1px" }}>
+            <span>{index === 0 ? "Produto" : index === 1 ? "Destaque" : "Condição"}</span>
           </div>
-          <div style={{ marginTop: "5px", fontSize: item.length > 28 ? "21px" : "25px", fontWeight: 800, lineHeight: 1.18 }}>{item}</div>
+          <div style={{ display: "flex", marginTop: "5px", fontSize: item.length > 28 ? "21px" : "25px", fontWeight: 800, lineHeight: 1.18 }}><span>{item}</span></div>
         </div>)}
         <div style={{ marginTop: "8px", display: "flex", alignItems: "center", gap: "9px", fontSize: "15px", color: "rgba(255,255,255,.78)", position: "relative" }}>
           <div style={{ width: "10px", height: "10px", display: "flex", borderRadius: "50%", background: "#54d397" }}/>
