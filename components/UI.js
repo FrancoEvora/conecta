@@ -1,20 +1,10 @@
 import Link from "next/link";
 
-const INVITATION_CODES = {
-  solaris: "SOLARIS-FRANCO-2026",
-  "parque-comercial": "PARQUE-FRANCO-2026",
-  "futura-casa": "FUTURA-FRANCO-2026"
-};
+const INVITATION_CODES = { solaris: "SOLARIS-FRANCO-2026", "parque-comercial": "PARQUE-FRANCO-2026", "futura-casa": "FUTURA-FRANCO-2026" };
 
 export function NetworkMark({ inverse = false, compact = false }) {
-  return <Link href="/" className={`brand ${inverse ? "brand--inverse" : ""}`} aria-label="Rede Conecta">
-    <svg className="brand__mark" viewBox="0 0 64 64" aria-hidden="true">
-      <defs><radialGradient id={inverse ? "nodeInv" : "node"}><stop offset="0" stopColor="#ffb14a"/><stop offset="1" stopColor="#f45a00"/></radialGradient></defs>
-      <g stroke="#f45a00" strokeWidth="4" strokeLinecap="round"><path d="M32 32V11M32 32L12 22M32 32L52 22M32 32L17 49M32 32L47 49"/></g>
-      <g fill={`url(#${inverse ? "nodeInv" : "node"})`}><circle cx="32" cy="32" r="13"/><circle cx="32" cy="8" r="6"/><circle cx="9" cy="20" r="6"/><circle cx="55" cy="20" r="6"/><circle cx="14" cy="52" r="6"/><circle cx="50" cy="52" r="6"/></g>
-    </svg>
-    {!compact && <span className="brand__copy"><strong><span>REDE</span> CONECTA</strong><small>Conectando <b>Pessoas</b> e Negócios</small></span>}
-  </Link>;
+  const gradient = inverse ? "nodeInv" : "node";
+  return <Link href="/" className={`brand ${inverse ? "brand--inverse" : ""}`} aria-label="Rede Conecta"><svg className="brand__mark" viewBox="0 0 64 64" aria-hidden="true"><defs><radialGradient id={gradient}><stop offset="0" stopColor="#ffb14a"/><stop offset="1" stopColor="#f45a00"/></radialGradient></defs><g stroke="#f45a00" strokeWidth="4" strokeLinecap="round"><path d="M32 32V11M32 32L12 22M32 32L52 22M32 32L17 49M32 32L47 49"/></g><g fill={`url(#${gradient})`}><circle cx="32" cy="32" r="13"/><circle cx="32" cy="8" r="6"/><circle cx="9" cy="20" r="6"/><circle cx="55" cy="20" r="6"/><circle cx="14" cy="52" r="6"/><circle cx="50" cy="52" r="6"/></g></svg>{!compact && <span className="brand__copy"><strong><span>REDE</span> CONECTA</strong><small>Conectando <b>Pessoas</b> e Negócios</small></span>}</Link>;
 }
 
 export function Icon({ name, size = 24 }) {
@@ -33,38 +23,23 @@ export function Icon({ name, size = 24 }) {
     target: <><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1"/><path d="M16 8l5-5M18 3h3v3"/></>,
     home: <><path d="M3 11l9-8 9 8"/><path d="M5 10v11h14V10M9 21v-7h6v7"/></>,
     check: <><circle cx="12" cy="12" r="9"/><path d="M8 12l3 3 5-6"/></>,
-    arrow: <><path d="M5 12h14M14 7l5 5-5 5"/></>,
-    menu: <><path d="M4 7h16M4 12h16M4 17h16"/></>
+    arrow: <path d="M5 12h14M14 7l5 5-5 5"/>,
+    menu: <path d="M4 7h16M4 12h16M4 17h16"/>
   };
   return <svg {...common}>{paths[name] || paths.check}</svg>;
 }
 
 export function Header({ minimal = false }) {
-  return <header className="site-header"><div className="container header__inner">
-    <NetworkMark />
-    {!minimal && <nav className="header__nav" aria-label="Principal"><Link href="/">Início</Link><Link href="/#como-funciona">Como funciona</Link><Link href="/oportunidades">Oportunidades</Link><Link href="/demo">Plataforma</Link></nav>}
-    <div className="header__actions"><Link href="/entrar" className="text-link">Entrar</Link><Link href="/cadastro" className="button button--orange">Cadastrar-se</Link></div>
-  </div></header>;
+  return <header className="site-header"><div className="container header__inner"><NetworkMark/>{!minimal && <nav className="header__nav" aria-label="Principal"><Link href="/">Início</Link><Link href="/#como-funciona">Como funciona</Link><Link href="/oportunidades">Oportunidades</Link><Link href="/entrar">Plataforma</Link></nav>}<div className="header__actions"><Link href="/entrar" className="text-link">Entrar</Link><Link href="/cadastro" className="button button--orange">Quero ser conector</Link></div></div></header>;
 }
 
 export function Footer() {
-  return <footer className="footer"><div className="container footer__grid">
-    <div><NetworkMark inverse/><p>Conectamos pessoas a produtos específicos e transformamos boas relações em negócios rastreáveis.</p></div>
-    <div><strong>Plataforma</strong><Link href="/#como-funciona">Como funciona</Link><Link href="/oportunidades">Oportunidades</Link><Link href="/demo">Demonstração</Link></div>
-    <div><strong>Governança</strong><Link href="/privacidade">Privacidade</Link><Link href="/termos">Termos de uso</Link><span>Produto primeiro · origem preservada</span></div>
-    <div><strong>Rede Conecta</strong><Link href="/cadastro">Quero ser conector</Link><Link href="/entrar">Acessar plataforma</Link><span>Monte Carmelo · MG</span></div>
-  </div><div className="container footer__bottom"><span>© 2026 Rede Conecta.</span><span>Conectando Pessoas e Negócios.</span></div></footer>;
+  return <footer className="footer"><div className="container footer__grid"><div><NetworkMark inverse/><p>Conectamos pessoas a produtos específicos, preservamos a origem e conduzimos a operação com controle e transparência.</p></div><div><strong>Plataforma</strong><Link href="/#como-funciona">Como funciona</Link><Link href="/oportunidades">Oportunidades</Link><Link href="/entrar">Acessar painel</Link></div><div><strong>Governança</strong><Link href="/privacidade">Privacidade</Link><Link href="/termos">Termos de uso</Link><Link href="/termos-conector">Termos do conector</Link><Link href="/termos-parceiros">Termos dos parceiros</Link></div><div><strong>Rede Conecta</strong><Link href="/cadastro">Quero ser conector</Link><Link href="/entrar">Acessar plataforma</Link><span>Operação centralizada · origem preservada</span></div></div><div className="container footer__bottom"><span>© 2026 Rede Conecta.</span><span>Conectando Pessoas e Negócios.</span></div></footer>;
 }
 
 export function ProductCard({ product, featured = false }) {
   const meta = product.product_metadata || {};
   const invitationCode = product.invitation_code || INVITATION_CODES[product.product_slug];
   const productHref = invitationCode ? `/convite/${encodeURIComponent(invitationCode)}` : "/cadastro";
-  return <article className={`product-card ${featured ? "product-card--featured" : ""}`}>
-    <div className="product-card__image" style={{ backgroundImage: `linear-gradient(180deg,transparent 45%,rgba(7,28,58,.74)),url('${meta.image || "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1200&q=82"}')` }}><span>{product.product_category}</span></div>
-    <div className="product-card__body"><small>{product.campaign_location || meta.location}</small><h3>{product.product_name}</h3><p>{product.product_description}</p>
-      <ul>{(meta.features || []).slice(0, 3).map(item => <li key={item}><Icon name="check" size={16}/>{item}</li>)}</ul>
-      <div className="product-card__footer"><span><b>{meta.area_from || "Oportunidade selecionada"}</b><small>{meta.payment || "Condições sob consulta"}</small></span><Link className="button button--navy" href={productHref}>Conhecer <Icon name="arrow" size={18}/></Link></div>
-    </div>
-  </article>;
+  return <article className={`product-card ${featured ? "product-card--featured" : ""}`}><div className="product-card__image" style={{ backgroundImage: `linear-gradient(180deg,transparent 45%,rgba(7,28,58,.74)),url('${meta.image || "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1200&q=82"}')` }}><span>{product.product_category}</span></div><div className="product-card__body"><small>{product.campaign_location || meta.location}</small><h3>{product.product_name}</h3><p>{product.product_description}</p><ul>{(meta.features || []).slice(0,3).map(item => <li key={item}><Icon name="check" size={16}/>{item}</li>)}</ul><div className="product-card__footer"><span><b>{meta.area_from || "Oportunidade selecionada"}</b><small>{meta.payment || "Condições sob consulta"}</small></span><Link className="button button--navy" href={productHref}>Conhecer <Icon name="arrow" size={18}/></Link></div></div></article>;
 }
