@@ -17,9 +17,36 @@ const operations = {
   create_account_invite: "admin_create_account_invite",
   partners: "admin_list_partners",
   upsert_partner: "admin_upsert_partner",
+
+  // Compatibilidade com o painel anterior. As gravações antigas agora geram somente rascunhos.
   catalog: "admin_list_catalog",
   upsert_development: "admin_upsert_development",
   upsert_product_campaign: "admin_upsert_product_campaign",
+
+  // Catálogo profissional: edição, revisão, publicação, mídia, preços e estoque.
+  catalog_v2: "admin_catalog_list_v2",
+  catalog_preflight: "admin_catalog_preflight",
+  catalog_transition: "admin_transition_catalog_entity",
+  catalog_restore_published: "admin_restore_published_catalog_entity",
+  upsert_development_v2: "admin_upsert_development_v2",
+  upsert_product_v2: "admin_upsert_product_v2",
+  upsert_campaign_v2: "admin_upsert_campaign_v2",
+  set_reward_rule_v2: "admin_set_reward_rule_v2",
+  transition_reward_rule_v2: "admin_transition_reward_rule_v2",
+  upsert_product_media: "admin_upsert_product_media",
+  transition_product_media: "admin_transition_product_media",
+  upsert_price_table: "admin_upsert_price_table",
+  transition_price_table: "admin_transition_price_table",
+  upsert_inventory_unit: "admin_upsert_inventory_unit",
+  import_inventory_units: "admin_import_inventory_units",
+  publish_due_catalog: "publish_due_catalog_entities",
+
+  // Compartilhamento social rastreável.
+  share_studio_invitation: "get_share_studio_invitation",
+  create_social_share: "create_my_social_share_link",
+  connector_social_analytics: "connector_social_share_analytics",
+  admin_social_analytics: "admin_social_share_analytics",
+
   brokers: "admin_list_brokers",
   set_broker_products: "admin_set_broker_products",
   connections: "admin_list_connections",
@@ -54,20 +81,37 @@ const operations = {
 
 export async function POST(request) {
   const session = await getValidRouteSession();
-  if (!session) return clearSessionCookies(NextResponse.json({ error: "Sessão expirada." }, { status: 401 }));
+  if (!session) {
+    return clearSessionCookies(
+      NextResponse.json({ error: "Sessão expirada." }, { status: 401 })
+    );
+  }
+
   try {
     const body = await request.json();
     const operation = String(body.operation || "");
     const rpcName = operations[operation];
-    if (!rpcName) return NextResponse.json({ error: "Operação não permitida." }, { status: 400 });
-    const params = body.params && typeof body.params === "object" && !Array.isArray(body.params) ? body.params : {};
+    if (!rpcName) {
+      return NextResponse.json({ error: "Operação não permitida." }, { status: 400 });
+    }
+
+    const params = body.params && typeof body.params === "object" && !Array.isArray(body.params)
+      ? body.params
+      : {};
     const data = await rpc(rpcName, params, { accessToken: session.accessToken });
     const response = NextResponse.json({ ok: true, data });
     if (session.refreshedSession) applySessionCookies(response, session.refreshedSession);
     return response;
   } catch (error) {
     const message = String(error?.message || "Falha ao processar a operação.");
-    const status = /permission|active_.*required|denied/i.test(message) ? 403 : /not_found|invalid|required|mismatch/i.test(message) ? 400 : 500;
-    return NextResponse.json({ error: message.replaceAll("_", " ") }, { status });
+    const normalized = message.replaceAll("_", " ");
+    const status = /permission|active .* required|denied/i.test(normalized)
+      ? 403
+      : /stale|conflict/i.test(normalized)
+        ? 409
+        : /not found|invalid|required|mismatch|preflight failed|workflow state/i.test(normalized)
+          ? 400
+          : 500;
+    return NextResponse.json({ error: normalized }, { status });
   }
 }
