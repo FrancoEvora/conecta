@@ -3,12 +3,12 @@ import { Footer, Header, Icon } from "@/components/UI";
 
 const content = {
   conectores: {
-    eyebrow: "Para quem conhece pessoas e cria oportunidades",
-    title: <>Suas conexões podem virar <em>negócios e recompensas.</em></>,
-    lead: "Você apresenta uma oportunidade. A Rede Conecta atende, qualifica, acompanha e conduz a negociação. Você visualiza a evolução e participa conforme as regras da campanha.",
+    eyebrow: "Para quem conhece pessoas e inspira confiança",
+    title: <>Use a sua confiança e credibilidade para <em>ganhar dinheiro.</em></>,
+    lead: "Pessoas já confiam na sua opinião e nas suas indicações. Você compartilha oportunidades selecionadas; a Rede Conecta atende, qualifica e conduz a negociação. Você acompanha a evolução e recebe conforme as regras da campanha.",
     primary: ["Quero começar a indicar", "/cadastro"],
     secondary: ["Ver oportunidades", "/oportunidades"],
-    promise: "Você conecta. Nós operamos. O negócio evolui com origem preservada.",
+    promise: "Sua credibilidade origina a oportunidade. Nós operamos. Você acompanha o resultado.",
     benefits: [
       ["link", "Compartilhe em poucos cliques", "Escolha uma oportunidade, personalize a mensagem e envie um link oficial pelo WhatsApp."],
       ["headset", "Não precisa vender", "A equipe da Rede Conecta assume o atendimento, a qualificação, o follow-up e a negociação."],
@@ -17,7 +17,7 @@ const content = {
     ],
     steps: ["Escolha uma oportunidade", "Compartilhe seu link", "O interessado autoriza", "A Rede Conecta atende", "Você acompanha o resultado"],
     finalTitle: <>Conhece alguém que pode comprar, investir ou construir?</>,
-    finalText: "Faça a conexão de forma profissional. A plataforma registra a origem e a equipe comercial cuida do restante."
+    finalText: "Use a confiança que essa pessoa já deposita em você para apresentar uma oportunidade de forma profissional. A plataforma registra a origem e a equipe comercial cuida do restante."
   },
   empreendedores: {
     eyebrow: "Para loteadoras, incorporadoras e imobiliárias",
