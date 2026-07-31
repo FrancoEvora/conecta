@@ -1,0 +1,61 @@
+/* Home mobile-first overrides */
+.mobile-only{display:none}
+@media (max-width:720px){
+  .container{width:min(100% - 32px,1220px)}
+  .site-header{position:sticky;top:0;background:rgba(255,253,249,.97);box-shadow:0 8px 30px rgba(7,28,58,.06)}
+  .header__inner{height:74px;gap:10px;justify-content:space-between}
+  .brand{gap:8px;min-width:0}
+  .brand__mark{width:42px;height:42px}
+  .brand__copy{display:grid!important;min-width:0}
+  .brand__copy strong{font-size:1rem;white-space:nowrap}
+  .brand__copy small{font-size:.52rem;white-space:nowrap}
+  .header__nav,.header__actions .text-link{display:none!important}
+  .header__actions{margin-left:auto;gap:0}
+  .header__actions .button{min-height:40px;padding:0 14px;border-radius:11px;font-size:.78rem}
+
+  .hero--commercial{background:linear-gradient(180deg,#fffdf9 0%,#fff8f0 100%)}
+  .hero--commercial:before{opacity:.35;mask-image:none;background-size:90px 90px,130px 130px}
+  .hero--commercial .hero__grid{min-height:auto;display:block;padding:34px 0 28px}
+  .hero--commercial .hero__copy{max-width:none}
+  .hero--commercial .eyebrow{margin-bottom:12px;font-size:.64rem;letter-spacing:.11em;line-height:1.35}
+  .hero--commercial h1{max-width:100%;margin:0 0 16px;font-size:clamp(2.25rem,10.6vw,3.35rem);line-height:.98;letter-spacing:-.055em}
+  .hero--commercial h1 em{display:block;margin-top:7px}
+  .hero--commercial .hero__copy>p{max-width:100%;margin:0 0 22px;font-size:.99rem;line-height:1.55;color:#53627a}
+  .desktop-hero-copy{display:none!important}
+  .mobile-only{display:block}
+  .hero--commercial .button-row{display:grid;grid-template-columns:1fr;gap:10px}
+  .hero--commercial .button{width:100%;min-height:54px;border-radius:15px;font-size:.95rem}
+  .hero--commercial .button-row .button--navy{background:#fff;color:var(--navy);border-color:#d9dfe8;box-shadow:none}
+  .hero--commercial .hero__trust{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-top:18px}
+  .hero--commercial .hero__trust span{min-height:68px;display:flex;flex-direction:column;justify-content:center;gap:5px;padding:10px 6px;border:1px solid #eee3d8;border-radius:13px;background:rgba(255,255,255,.82);font-size:.66rem;text-align:center;line-height:1.25}
+  .hero--commercial .hero__trust svg{width:20px;height:20px;color:var(--orange)}
+  .hero--commercial .hero__visual{display:none}
+
+  .commercial-definition{padding:26px 0}
+  .commercial-definition .container{display:block!important}
+  .commercial-definition span{display:block;margin-bottom:8px;font-size:.61rem}
+  .commercial-definition strong{font-size:1.05rem;line-height:1.38}
+
+  .section{padding:56px 0}
+  .section-heading--split{display:block}
+  .section-heading{margin-bottom:28px}
+  .section-heading h2{font-size:2rem;line-height:1.03}
+  .section-heading--split>p{margin-top:14px;font-size:.92rem}
+  .audience-grid,.commercial-timeline,.product-grid{grid-template-columns:1fr!important}
+  .audience-card{padding:24px!important}
+  .commercial-timeline{gap:12px}
+  .commercial-timeline article{min-height:auto!important;padding:22px!important}
+  .product-card--featured{transform:none}
+  .commercial-callout,.callout{display:block;padding:28px 22px;border-radius:24px}
+  .commercial-callout .button-row{display:grid;margin-top:22px}
+  .footer__grid{grid-template-columns:1fr!important;gap:30px}
+  .footer__bottom{display:grid;gap:8px}
+}
+@media (max-width:390px){
+  .container{width:calc(100% - 24px)}
+  .brand__copy strong{font-size:.91rem}
+  .brand__copy small{font-size:.47rem}
+  .header__actions .button{padding:0 11px;font-size:.72rem}
+  .hero--commercial h1{font-size:2.2rem}
+  .hero--commercial .hero__copy>p{font-size:.92rem}
+}

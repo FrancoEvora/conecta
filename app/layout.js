@@ -1,5 +1,6 @@
 import "./globals.css";
 import "./commercial.css";
+import "./mobile-home.css";
 import { SITE_URL } from "@/lib/config";
 
 export const metadata = {
