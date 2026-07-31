@@ -1,34 +1,121 @@
 import crypto from "node:crypto";
 import { NextResponse } from "next/server";
 import { publicStorageUrl, rpc, storageUpload } from "@/lib/supabase";
-import { applySessionCookies, getValidRouteSession } from "@/lib/session";
+import { applySessionCookies, clearSessionCookies, getValidRouteSession } from "@/lib/session";
 
-const buckets = new Set(["catalog-media", "deal-evidence", "credentials"]);
-const extensions = new Set(["jpg", "jpeg", "png", "webp", "pdf", "mp4"]);
+const MAX_UPLOAD_BYTES = 4 * 1024 * 1024;
 
-function safePart(value) {
-  return String(value || "arquivo").normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-zA-Z0-9._-]+/g, "-").replace(/-+/g, "-").slice(0, 120);
+const bucketRules = {
+  "catalog-media": {
+    permissions: ["catalog.edit", "catalog.manage", "materials.manage", "platform.all"],
+    extensions: new Set(["jpg", "jpeg", "png", "webp", "pdf", "mp4"]),
+    mimes: new Set(["image/jpeg", "image/png", "image/webp", "application/pdf", "video/mp4"]),
+    public: true
+  },
+  "deal-evidence": {
+    permissions: ["deals.manage", "platform.all"],
+    extensions: new Set(["jpg", "jpeg", "png", "webp", "pdf"]),
+    mimes: new Set(["image/jpeg", "image/png", "image/webp", "application/pdf"]),
+    public: false
+  },
+  credentials: {
+    permissions: ["brokers.manage", "compliance.manage", "platform.all"],
+    extensions: new Set(["jpg", "jpeg", "png", "webp", "pdf"]),
+    mimes: new Set(["image/jpeg", "image/png", "image/webp", "application/pdf"]),
+    public: false
+  }
+};
+
+function safePart(value, fallback = "arquivo") {
+  return String(value || fallback)
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-zA-Z0-9._-]+/g, "-")
+    .replace(/-+/g, "-")
+    .replace(/^[-.]+|[-.]+$/g, "")
+    .slice(0, 100) || fallback;
+}
+
+function detectedMime(bytes) {
+  if (bytes.length >= 4 && bytes[0] === 0xff && bytes[1] === 0xd8 && bytes[2] === 0xff) return "image/jpeg";
+  if (bytes.length >= 8 && bytes.subarray(0, 8).equals(Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]))) return "image/png";
+  if (bytes.length >= 12 && bytes.subarray(0, 4).toString("ascii") === "RIFF" && bytes.subarray(8, 12).toString("ascii") === "WEBP") return "image/webp";
+  if (bytes.length >= 5 && bytes.subarray(0, 5).toString("ascii") === "%PDF-") return "application/pdf";
+  if (bytes.length >= 12 && bytes.subarray(4, 8).toString("ascii") === "ftyp") return "video/mp4";
+  return null;
+}
+
+function expectedMimeForExtension(extension) {
+  if (["jpg", "jpeg"].includes(extension)) return "image/jpeg";
+  if (extension === "png") return "image/png";
+  if (extension === "webp") return "image/webp";
+  if (extension === "pdf") return "application/pdf";
+  if (extension === "mp4") return "video/mp4";
+  return null;
 }
 
 export async function POST(request) {
   const session = await getValidRouteSession();
-  if (!session) return NextResponse.json({ error: "Sessão expirada." }, { status: 401 });
+  if (!session) {
+    return clearSessionCookies(NextResponse.json({ error: "Sessão expirada." }, { status: 401 }));
+  }
+
   try {
+    const context = await rpc("get_my_app_context", {}, { accessToken: session.accessToken });
     const form = await request.formData();
     const file = form.get("file");
     const bucket = String(form.get("bucket") || "");
-    const folder = safePart(form.get("folder") || "geral");
-    if (!(file instanceof File) || !buckets.has(bucket)) return NextResponse.json({ error: "Arquivo ou destino inválido." }, { status: 400 });
-    if (file.size <= 0 || file.size > 50 * 1024 * 1024) return NextResponse.json({ error: "O arquivo deve ter no máximo 50 MB." }, { status: 400 });
-    const extension = safePart(file.name).split(".").pop()?.toLowerCase();
-    if (!extensions.has(extension)) return NextResponse.json({ error: "Formato de arquivo não permitido." }, { status: 400 });
-    const context = await rpc("get_my_app_context", {}, { accessToken: session.accessToken });
-    const path = `${context.organization_id}/${folder}/${crypto.randomUUID()}-${safePart(file.name)}`;
-    await storageUpload({ bucket, path, file, accessToken: session.accessToken });
-    const response = NextResponse.json({ ok: true, bucket, path, publicUrl: bucket === "catalog-media" ? publicStorageUrl(bucket, path) : null });
+    const folder = safePart(form.get("folder") || "geral", "geral");
+    const rule = bucketRules[bucket];
+
+    if (!(file instanceof File) || !rule) {
+      return NextResponse.json({ error: "Arquivo ou destino inválido." }, { status: 400 });
+    }
+
+    const permissions = Array.isArray(context.permissions) ? context.permissions : [];
+    const permitted = rule.permissions.some(permission => permissions.includes(permission));
+    if (context.portal_kind !== "staff" || !permitted) {
+      return NextResponse.json({ error: "Você não possui permissão para enviar arquivos neste destino." }, { status: 403 });
+    }
+
+    if (file.size <= 0 || file.size > MAX_UPLOAD_BYTES) {
+      return NextResponse.json({
+        error: "O arquivo deve ter no máximo 4 MB. Para vídeos maiores, utilize uma URL externa aprovada."
+      }, { status: 400 });
+    }
+
+    const safeName = safePart(file.name);
+    const extension = safeName.split(".").pop()?.toLowerCase();
+    if (!extension || !rule.extensions.has(extension)) {
+      return NextResponse.json({ error: "Formato de arquivo não permitido." }, { status: 400 });
+    }
+
+    const buffer = Buffer.from(await file.arrayBuffer());
+    const signatureMime = detectedMime(buffer);
+    const expectedMime = expectedMimeForExtension(extension);
+    if (!signatureMime || signatureMime !== expectedMime || !rule.mimes.has(signatureMime)) {
+      return NextResponse.json({ error: "O conteúdo do arquivo não corresponde ao formato informado." }, { status: 400 });
+    }
+
+    const sha256 = crypto.createHash("sha256").update(buffer).digest("hex");
+    const path = `${context.organization_id}/${folder}/${crypto.randomUUID()}-${safeName}`;
+    const uploadFile = new File([buffer], safeName, { type: signatureMime });
+    await storageUpload({ bucket, path, file: uploadFile, accessToken: session.accessToken });
+
+    const response = NextResponse.json({
+      ok: true,
+      bucket,
+      path,
+      publicUrl: rule.public ? publicStorageUrl(bucket, path) : null,
+      mimeType: signatureMime,
+      size: file.size,
+      sha256
+    });
     if (session.refreshedSession) applySessionCookies(response, session.refreshedSession);
     return response;
   } catch (error) {
-    return NextResponse.json({ error: String(error?.message || "Não foi possível enviar o arquivo.") }, { status: 500 });
+    const message = String(error?.message || "Não foi possível enviar o arquivo.");
+    const status = /permission|denied/i.test(message) ? 403 : 500;
+    return NextResponse.json({ error: message.replaceAll("_", " ") }, { status });
   }
 }

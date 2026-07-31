@@ -23,6 +23,7 @@ export async function generateMetadata({ params }) {
   const product = invitation?.product_name || "uma oportunidade selecionada";
   const title = `${connector} conectou você ao ${product}`;
   const description = `Convite oficial da Rede Conecta, enviado por ${connector}. Conheça ${product} e autorize o atendimento somente se houver interesse.`;
+  const image = invitation?.product_metadata?.image || `${canonical}/opengraph-image?v=4`;
 
   return {
     title,
@@ -36,27 +37,21 @@ export async function generateMetadata({ params }) {
       url: canonical,
       title: `${title} | Rede Conecta`,
       description,
-      images: [{
-        url: `${canonical}/opengraph-image?v=3`,
-        width: 1200,
-        height: 630,
-        alt: `Convite oficial para conhecer ${product}`
-      }]
+      images: [{ url: image, width: 1200, height: 630, alt: `Convite oficial para conhecer ${product}` }]
     },
-    twitter: {
-      card: "summary_large_image",
-      title: `${title} | Rede Conecta`,
-      description,
-      images: [`${canonical}/opengraph-image?v=3`]
-    }
+    twitter: { card: "summary_large_image", title: `${title} | Rede Conecta`, description, images: [image] }
   };
 }
 
-export default async function InvitePage({ params }) {
+export default async function InvitePage({ params, searchParams }) {
   const { code } = await params;
+  const query = await searchParams;
   const invitation = await resolveInvitation(code);
   if (!invitation) notFound();
 
+  const socialShareCode = /^[A-Za-z0-9_-]{16,64}$/.test(String(query?.sc || ""))
+    ? String(query.sc)
+    : "";
   const hostname = (() => {
     try { return new URL(SITE_URL).hostname; } catch { return "conecta-pearl.vercel.app"; }
   })();
@@ -87,7 +82,7 @@ export default async function InvitePage({ params }) {
           </div>
         </div>
       </section>
-      <InviteClient invitation={invitation} code={code}/>
+      <InviteClient invitation={invitation} code={code} socialShareCode={socialShareCode}/>
     </main>
   </>;
 }
