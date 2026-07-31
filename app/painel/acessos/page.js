@@ -17,10 +17,11 @@ export default async function AccessPage() {
   catch { redirect("/api/auth/logout"); }
   const permissions = context.permissions || [];
   if (context.portal_kind !== "staff" || !(permissions.includes("platform.all") || permissions.includes("staff.manage"))) redirect("/painel");
-  const [accounts, invites, roles] = await Promise.all([
+  const [accounts, invites, roles, partners] = await Promise.all([
     rpc("admin_list_access_accounts", {}, { accessToken: session.accessToken }),
     rpc("admin_list_account_invites", { p_status: null }, { accessToken: session.accessToken }),
-    rpc("admin_list_access_roles", {}, { accessToken: session.accessToken })
+    rpc("admin_list_access_roles", {}, { accessToken: session.accessToken }),
+    rpc("admin_list_partners", {}, { accessToken: session.accessToken })
   ]);
-  return <AccessManager initialAccounts={accounts} initialInvites={invites} roles={roles} currentProfileId={context.profile_id}/>;
+  return <AccessManager initialAccounts={accounts} initialInvites={invites} roles={roles} partners={partners || []} currentProfileId={context.profile_id}/>;
 }
