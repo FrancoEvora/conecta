@@ -4,7 +4,7 @@ import styles from "./cadastro.module.css";
 
 export const metadata = {
   title: "Quero ser conector",
-  description: "Escolha os mercados em que deseja atuar e crie seu perfil comercial na Rede Conecta."
+  description: "Use a sua confiança e credibilidade para ganhar dinheiro compartilhando oportunidades selecionadas."
 };
 
 export default function ApplicationPage() {
@@ -16,8 +16,8 @@ export default function ApplicationPage() {
         <div className={`container ${styles.heroGrid}`}>
           <div>
             <span className={styles.eyebrow}>Faça parte da Rede Conecta</span>
-            <h1>Suas conexões podem virar <em>negócios e recompensas.</em></h1>
-            <p>Escolha os mercados em que você possui relacionamento. A Rede Conecta encontra oportunidades compatíveis, conduz o atendimento e preserva a origem de cada conexão.</p>
+            <h1>Use a sua confiança e credibilidade para <em>ganhar dinheiro.</em></h1>
+            <p>Transforme a confiança que as pessoas já depositam em você em oportunidades reais. Compartilhe produtos selecionados; a Rede Conecta conduz o atendimento, registra a origem e acompanha o resultado.</p>
           </div>
           <aside className={styles.heroCard}>
             <strong>Você conecta. A Rede Conecta faz o restante.</strong>
