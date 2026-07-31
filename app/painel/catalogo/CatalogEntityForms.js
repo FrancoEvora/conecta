@@ -3,93 +3,91 @@
 import { useState } from "react";
 import { Icon } from "@/components/UI";
 import styles from "./CatalogConsole.module.css";
+import pro from "./CatalogProfessionalForms.module.css";
 import { Field, FormActions, request, slugify } from "./CatalogShared";
+import { DEVELOPMENT_TYPES, PRODUCT_SEGMENTS, segmentByCode, typeLabel } from "./ProductTaxonomy";
+
+function SegmentSelector({ value, onChange }) {
+  return <div className={pro.segmentGrid}>{PRODUCT_SEGMENTS.map(segment => <label className={`${pro.segmentCard} ${value === segment.code ? pro.selected : ""}`} key={segment.code}><input type="radio" value={segment.code} checked={value === segment.code} onChange={() => onChange(segment.code)}/><Icon name={segment.icon}/><span><b>{segment.label}</b><small>{segment.types.length} tipos disponíveis</small></span></label>)}</div>;
+}
+function Section({ number, title, description, children }) {
+  return <section className={pro.section}><header><div className={pro.sectionTitle}><span className={pro.sectionNumber}>{number}</span><div><h3>{title}</h3><p>{description}</p></div></div></header>{children}</section>;
+}
+function DynamicProductFields({ segment, item }) {
+  const a = item?.metadata?.attributes || {};
+  if (segment === "real_estate") return <div className={pro.dynamicGrid}><Field label="Área privativa ou do lote"><input name="area_from" defaultValue={item?.metadata?.area_from || a.area_from || ""} placeholder="Ex.: a partir de 360 m²"/></Field><Field label="Estágio do produto"><select name="delivery_stage" defaultValue={a.delivery_stage || "launch"}><option value="launch">Lançamento</option><option value="under_construction">Em implantação ou obra</option><option value="ready">Pronto</option><option value="resale">Revenda</option></select></Field><Field label="Quartos ou suítes"><input name="bedrooms" type="number" min="0" defaultValue={a.bedrooms || ""}/></Field><Field label="Vagas"><input name="parking_spaces" type="number" min="0" defaultValue={a.parking_spaces || ""}/></Field></div>;
+  if (segment === "vehicles") return <div className={pro.dynamicGrid}><Field label="Marca"><input name="brand" defaultValue={a.brand || ""}/></Field><Field label="Modelo e versão"><input name="model_version" defaultValue={a.model_version || ""}/></Field><Field label="Ano/modelo"><input name="model_year" defaultValue={a.model_year || ""}/></Field><Field label="Quilometragem"><input name="mileage" type="number" min="0" defaultValue={a.mileage || ""}/></Field><Field label="Combustível"><input name="fuel" defaultValue={a.fuel || ""}/></Field><Field label="Transmissão"><input name="transmission" defaultValue={a.transmission || ""}/></Field></div>;
+  if (segment === "beauty") return <div className={pro.dynamicGrid}><Field label="Marca"><input name="brand" defaultValue={a.brand || ""}/></Field><Field label="Linha"><input name="line" defaultValue={a.line || ""}/></Field><Field label="Volume ou quantidade"><input name="volume" defaultValue={a.volume || ""}/></Field><Field label="Público"><select name="audience" defaultValue={a.audience || "unisex"}><option value="female">Feminino</option><option value="male">Masculino</option><option value="unisex">Unissex</option></select></Field></div>;
+  if (segment === "solar") return <div className={pro.dynamicGrid}><Field label="Potência estimada"><input name="installed_power" defaultValue={a.installed_power || ""} placeholder="Ex.: 8,8 kWp"/></Field><Field label="Economia estimada"><input name="estimated_savings" defaultValue={a.estimated_savings || ""}/></Field><Field label="Prazo de instalação"><input name="installation_time" defaultValue={a.installation_time || ""}/></Field><Field label="Garantia"><input name="warranty" defaultValue={a.warranty || ""}/></Field></div>;
+  if (segment === "agribusiness") return <div className={pro.dynamicGrid}><Field label="Marca ou fabricante"><input name="brand" defaultValue={a.brand || ""}/></Field><Field label="Aplicação"><input name="application" defaultValue={a.application || ""}/></Field><Field label="Unidade de comercialização"><input name="unit_measure" defaultValue={a.unit_measure || ""}/></Field><Field label="Disponibilidade"><input name="availability" defaultValue={a.availability || ""}/></Field></div>;
+  if (segment === "financial") return <div className={pro.dynamicGrid}><Field label="Prazo"><input name="term" defaultValue={a.term || ""}/></Field><Field label="Parcela inicial"><input name="installment_from" defaultValue={a.installment_from || ""}/></Field><Field label="Critério de elegibilidade"><input name="eligibility" defaultValue={a.eligibility || ""}/></Field><Field label="Instituição responsável"><input name="provider" defaultValue={a.provider || ""}/></Field></div>;
+  return <div className={pro.dynamicGrid}><Field label="Formato de entrega"><input name="delivery_format" defaultValue={a.delivery_format || ""}/></Field><Field label="Prazo ou duração"><input name="duration" defaultValue={a.duration || ""}/></Field><Field label="Área de cobertura"><input name="coverage" defaultValue={a.coverage || ""}/></Field><Field label="Responsável técnico"><input name="technical_owner" defaultValue={a.technical_owner || ""}/></Field></div>;
+}
 
 export function DevelopmentForm({ item, partners, onClose, onSaved, setToast }) {
+  const initialSegment = item?.commercial_metadata?.segment || "real_estate";
+  const [segment, setSegment] = useState(initialSegment);
   const [busy, setBusy] = useState(false);
+  const developmentTypes = DEVELOPMENT_TYPES[segment] || DEVELOPMENT_TYPES.other;
   async function submit(event) {
     event.preventDefault(); setBusy(true);
     try {
-      const form = new FormData(event.currentTarget);
-      const values = Object.fromEntries(form.entries());
+      const form = new FormData(event.currentTarget); const values = Object.fromEntries(form.entries());
+      const selectedType = values.development_type;
+      values.category = developmentTypes.find(([code]) => code === selectedType)?.[1] || selectedType;
       values.training_required = form.get("training_required") === "on";
-      values.commercial_metadata = { seo_title: values.seo_title || "", seo_description: values.seo_description || "" };
-      delete values.seo_title; delete values.seo_description;
+      values.commercial_metadata = {
+        ...(item?.commercial_metadata || {}), segment, development_type: selectedType,
+        lifecycle_stage: values.lifecycle_stage || "planning", business_model: values.business_model || "direct_sales",
+        seo_title: values.seo_title || "", seo_description: values.seo_description || ""
+      };
+      ["development_type","lifecycle_stage","business_model","seo_title","seo_description"].forEach(key => delete values[key]);
       await request("upsert_development_v2", { p_development_id: item?.id || null, p_payload: values, p_expected_lock_version: item?.lock_version ?? null });
-      setToast("Rascunho do empreendimento salvo com histórico de versão."); onSaved(); onClose();
+      setToast("Estrutura comercial salva como rascunho versionado."); onSaved(); onClose();
     } catch (error) { setToast(error.message, true); } finally { setBusy(false); }
   }
-  return <form className={styles.form} onSubmit={submit}>
-    <div className={styles.formGrid}>
-      <Field label="Nome"><input name="name" required defaultValue={item?.name || ""} onBlur={event => { const slug = event.currentTarget.form.elements.slug; if (!slug.value) slug.value = `${slugify(event.target.value)}-empreendimento`; }}/></Field>
-      <Field label="Slug"><input name="slug" required defaultValue={item?.slug || ""}/></Field>
-      <Field label="Parceiro responsável"><select name="partner_id" required defaultValue={item?.partner_id || ""}><option value="">Selecione</option>{partners.map(partner => <option key={partner.id} value={partner.id}>{partner.name}</option>)}</select></Field>
-      <Field label="Razão jurídica"><input name="legal_name" defaultValue={item?.legal_name || ""}/></Field>
-      <Field label="Cidade"><input name="city" required defaultValue={item?.city || ""}/></Field>
-      <Field label="Estado"><input name="state" required maxLength="2" defaultValue={item?.state || ""}/></Field>
-      <Field label="Categoria"><input name="category" required defaultValue={item?.category || ""}/></Field>
-      <Field label="Público prioritário"><input name="target_audience" defaultValue={item?.target_audience || ""}/></Field>
-      <Field label="Região de atendimento"><input name="service_region" defaultValue={item?.service_region || ""}/></Field>
-      <Field label="Quantidade de unidades"><input name="unit_count" type="number" min="0" defaultValue={item?.unit_count ?? ""}/></Field>
-      <Field label="SLA do primeiro contato" hint="minutos"><input name="lead_sla_minutes" type="number" min="5" max="1440" defaultValue={item?.lead_sla_minutes || 30}/></Field>
-      <Field label="Website"><input name="website_url" type="url" defaultValue={item?.website_url || ""}/></Field>
-      <Field label="Latitude"><input name="latitude" inputMode="decimal" defaultValue={item?.latitude || ""}/></Field>
-      <Field label="Longitude"><input name="longitude" inputMode="decimal" defaultValue={item?.longitude || ""}/></Field>
-      <Field label="Título para busca"><input name="seo_title" defaultValue={item?.commercial_metadata?.seo_title || ""}/></Field>
-      <Field label="Resumo para busca"><input name="seo_description" defaultValue={item?.commercial_metadata?.seo_description || ""}/></Field>
-    </div>
-    <Field label="Endereço"><input name="address" defaultValue={item?.address || ""}/></Field>
-    <Field label="Descrição institucional"><textarea name="description" rows="5" required defaultValue={item?.description || ""}/></Field>
-    <Field label="Resumo da alteração"><input name="change_summary" required placeholder="Ex.: atualização de localização e descrição comercial"/></Field>
-    <label className={styles.check}><input name="training_required" type="checkbox" defaultChecked={item?.training_required ?? true}/>Treinamento obrigatório para profissionais vinculados</label>
+  return <form className={`${styles.form} ${pro.formShell}`} onSubmit={submit}>
+    <div className={pro.classification}><header><h3>Segmento da operação</h3><p>Essa escolha define tipos, atributos, filtros, campanhas e relatórios.</p></header><SegmentSelector value={segment} onChange={setSegment}/></div>
+    <Section number="1" title="Classificação" description="Defina o tipo da estrutura antes dos dados cadastrais."><div className={pro.typeSelect}><label>Tipo de estrutura<select name="development_type" required defaultValue={item?.commercial_metadata?.development_type || developmentTypes[0][0]}>{developmentTypes.map(([code,label]) => <option value={code} key={code}>{label}</option>)}</select></label><label>Etapa atual<select name="lifecycle_stage" defaultValue={item?.commercial_metadata?.lifecycle_stage || "planning"}><option value="planning">Planejamento</option><option value="launch">Lançamento</option><option value="active">Em operação</option><option value="mature">Consolidado</option><option value="closed">Encerrado</option></select></label></div></Section>
+    <Section number="2" title="Identidade e vínculo" description="Informações institucionais e responsabilidade comercial."><div className={styles.formGrid}><Field label="Nome"><input name="name" required defaultValue={item?.name || ""} onBlur={event => { const slug = event.currentTarget.form.elements.slug; if (!slug.value) slug.value = `${slugify(event.target.value)}-estrutura`; }}/></Field><Field label="Slug"><input name="slug" required defaultValue={item?.slug || ""}/></Field><Field label="Parceiro responsável"><select name="partner_id" required defaultValue={item?.partner_id || ""}><option value="">Selecione</option>{partners.map(partner => <option key={partner.id} value={partner.id}>{partner.name}</option>)}</select></Field><Field label="Razão jurídica"><input name="legal_name" defaultValue={item?.legal_name || ""}/></Field><Field label="Modelo comercial"><select name="business_model" defaultValue={item?.commercial_metadata?.business_model || "direct_sales"}><option value="direct_sales">Venda direta</option><option value="marketplace">Marketplace</option><option value="referral_network">Rede de indicação</option><option value="hybrid">Híbrido</option></select></Field><Field label="Público prioritário"><input name="target_audience" defaultValue={item?.target_audience || ""}/></Field></div></Section>
+    <Section number="3" title="Localização e capacidade" description="Território, volume e nível de serviço."><div className={styles.formGrid}><Field label="Cidade"><input name="city" required defaultValue={item?.city || ""}/></Field><Field label="Estado"><input name="state" required maxLength="2" defaultValue={item?.state || ""}/></Field><Field label="Região de atendimento"><input name="service_region" defaultValue={item?.service_region || ""}/></Field><Field label="Quantidade de unidades ou itens"><input name="unit_count" type="number" min="0" defaultValue={item?.unit_count ?? ""}/></Field><Field label="SLA do primeiro contato" hint="minutos"><input name="lead_sla_minutes" type="number" min="5" max="1440" defaultValue={item?.lead_sla_minutes || 30}/></Field><Field label="Website"><input name="website_url" type="url" defaultValue={item?.website_url || ""}/></Field><Field label="Latitude"><input name="latitude" inputMode="decimal" defaultValue={item?.latitude || ""}/></Field><Field label="Longitude"><input name="longitude" inputMode="decimal" defaultValue={item?.longitude || ""}/></Field></div><Field label="Endereço"><input name="address" defaultValue={item?.address || ""}/></Field></Section>
+    <Section number="4" title="Apresentação e governança" description="Conteúdo público, busca e controle da alteração."><Field label="Descrição institucional"><textarea name="description" rows="5" required defaultValue={item?.description || ""}/></Field><div className={styles.formGrid}><Field label="Título para busca"><input name="seo_title" defaultValue={item?.commercial_metadata?.seo_title || ""}/></Field><Field label="Resumo para busca"><input name="seo_description" defaultValue={item?.commercial_metadata?.seo_description || ""}/></Field></div><Field label="Resumo da alteração"><input name="change_summary" required placeholder="Ex.: nova estrutura cadastrada para revisão comercial"/></Field><label className={pro.checkCard}><input name="training_required" type="checkbox" defaultChecked={item?.training_required ?? true}/><span>Exigir treinamento antes de profissionais atuarem nesta estrutura.</span></label></Section>
     <FormActions onClose={onClose} busy={busy}/>
   </form>;
 }
 
 export function ProductForm({ item, partners, developments, onClose, onSaved, setToast }) {
+  const initialSegment = item?.metadata?.segment || "real_estate";
+  const [segment, setSegment] = useState(initialSegment);
   const [busy, setBusy] = useState(false);
+  const productTypes = segmentByCode(segment).types;
   async function submit(event) {
     event.preventDefault(); setBusy(true);
     try {
-      const form = new FormData(event.currentTarget);
-      const values = Object.fromEntries(form.entries());
+      const form = new FormData(event.currentTarget); const values = Object.fromEntries(form.entries());
+      const productType = values.product_type;
+      const attributeKeys = ["bedrooms","parking_spaces","delivery_stage","brand","model_version","model_year","mileage","fuel","transmission","line","volume","audience","installed_power","estimated_savings","installation_time","warranty","application","unit_measure","availability","term","installment_from","eligibility","provider","delivery_format","duration","coverage","technical_owner"];
+      const attributes = Object.fromEntries(attributeKeys.filter(key => values[key] !== undefined && values[key] !== "").map(key => [key, values[key]]));
+      values.category = typeLabel(segment, productType);
+      values.minimum_ticket_cents = values.minimum_ticket_reais ? Math.round(Number(String(values.minimum_ticket_reais).replace(",",".")) * 100) : null;
+      values.maximum_ticket_cents = values.maximum_ticket_reais ? Math.round(Number(String(values.maximum_ticket_reais).replace(",",".")) * 100) : null;
       values.training_required = form.get("training_required") === "on";
       values.metadata = {
-        image: values.image || "",
-        area_from: values.area_from || "",
-        payment: values.payment || "",
-        location: values.location || "",
-        lifestyle: values.lifestyle || "",
-        features: String(values.features || "").split("\n").map(value => value.trim()).filter(Boolean)
+        ...(item?.metadata || {}), segment, product_type: productType, product_type_label: typeLabel(segment, productType),
+        image: values.image || "", area_from: values.area_from || "", payment: values.payment || "", location: values.location || "", lifestyle: values.lifestyle || "",
+        features: String(values.features || "").split("\n").map(value => value.trim()).filter(Boolean), attributes
       };
-      ["image","area_from","payment","location","lifestyle","features"].forEach(key => delete values[key]);
+      ["product_type","minimum_ticket_reais","maximum_ticket_reais","image","area_from","payment","location","lifestyle","features",...attributeKeys].forEach(key => delete values[key]);
       await request("upsert_product_v2", { p_product_id: item?.id || null, p_payload: values, p_expected_lock_version: item?.lock_version ?? null });
-      setToast("Rascunho do produto salvo. A versão publicada anterior permanece no ar até nova aprovação."); onSaved(); onClose();
+      setToast("Produto salvo como rascunho estruturado. A versão publicada continua preservada."); onSaved(); onClose();
     } catch (error) { setToast(error.message, true); } finally { setBusy(false); }
   }
-  return <form className={styles.form} onSubmit={submit}>
-    <div className={styles.formGrid}>
-      <Field label="Nome do produto"><input name="name" required defaultValue={item?.name || ""} onBlur={event => { const slug = event.currentTarget.form.elements.slug; if (!slug.value) slug.value = slugify(event.target.value); }}/></Field>
-      <Field label="Slug"><input name="slug" required defaultValue={item?.slug || ""}/></Field>
-      <Field label="Empreendimento principal"><select name="development_id" required defaultValue={item?.development_ids?.[0] || ""}><option value="">Selecione</option>{developments.map(development => <option key={development.id} value={development.id}>{development.name}</option>)}</select></Field>
-      <Field label="Parceiro"><select name="partner_id" required defaultValue={item?.partner_id || ""}><option value="">Selecione</option>{partners.map(partner => <option key={partner.id} value={partner.id}>{partner.name}</option>)}</select></Field>
-      <Field label="Categoria"><input name="category" required defaultValue={item?.category || ""}/></Field>
-      <Field label="Público prioritário"><input name="target_audience" defaultValue={item?.target_audience || ""}/></Field>
-      <Field label="Região"><input name="service_region" defaultValue={item?.service_region || ""}/></Field>
-      <Field label="SLA do lead" hint="minutos"><input name="lead_sla_minutes" type="number" min="5" max="1440" defaultValue={item?.lead_sla_minutes || 30}/></Field>
-      <Field label="Ticket mínimo" hint="centavos"><input name="minimum_ticket_cents" type="number" min="0" defaultValue={item?.minimum_ticket_cents ?? ""}/></Field>
-      <Field label="Ticket máximo" hint="centavos"><input name="maximum_ticket_cents" type="number" min="0" defaultValue={item?.maximum_ticket_cents ?? ""}/></Field>
-      <Field label="Imagem de capa"><input name="image" type="url" defaultValue={item?.metadata?.image || ""} placeholder="URL pública ou use o módulo de mídia"/></Field>
-      <Field label="Metragem/destaque"><input name="area_from" defaultValue={item?.metadata?.area_from || ""}/></Field>
-      <Field label="Condição comercial curta"><input name="payment" defaultValue={item?.metadata?.payment || ""}/></Field>
-      <Field label="Localização curta"><input name="location" defaultValue={item?.metadata?.location || ""}/></Field>
-      <Field label="Estilo de vida"><input name="lifestyle" defaultValue={item?.metadata?.lifestyle || ""}/></Field>
-      <Field label="Nome jurídico"><input name="legal_name" defaultValue={item?.legal_name || ""}/></Field>
-    </div>
-    <Field label="Descrição comercial"><textarea name="description" rows="5" required defaultValue={item?.description || ""}/></Field>
-    <Field label="Diferenciais" hint="um por linha"><textarea name="features" rows="5" defaultValue={(item?.metadata?.features || []).join("\n")}/></Field>
-    <Field label="Resumo da alteração"><input name="change_summary" required placeholder="Descreva objetivamente o que foi alterado"/></Field>
-    <label className={styles.check}><input name="training_required" type="checkbox" defaultChecked={item?.training_required ?? true}/>Exigir treinamento antes da atuação</label>
+  return <form className={`${styles.form} ${pro.formShell}`} onSubmit={submit}>
+    <div className={pro.classification}><header><h3>Segmento e tipo do produto</h3><p>O tipo controla os atributos, filtros, páginas públicas e indicadores comerciais.</p></header><SegmentSelector value={segment} onChange={setSegment}/><div className={pro.typeSelect} style={{marginTop:12}}><label>Tipo de produto<select name="product_type" required defaultValue={item?.metadata?.product_type || productTypes[0][0]}>{productTypes.map(([code,label]) => <option value={code} key={code}>{label}</option>)}</select></label><label>Empreendimento ou estrutura principal<select name="development_id" required defaultValue={item?.development_ids?.[0] || ""}><option value="">Selecione</option>{developments.map(development => <option key={development.id} value={development.id}>{development.name}</option>)}</select></label></div></div>
+    <Section number="1" title="Identidade comercial" description="Nome, propriedade e posicionamento do produto."><div className={styles.formGrid}><Field label="Nome do produto"><input name="name" required defaultValue={item?.name || ""} onBlur={event => { const slug = event.currentTarget.form.elements.slug; if (!slug.value) slug.value = slugify(event.target.value); }}/></Field><Field label="Slug"><input name="slug" required defaultValue={item?.slug || ""}/></Field><Field label="Parceiro responsável"><select name="partner_id" required defaultValue={item?.partner_id || ""}><option value="">Selecione</option>{partners.map(partner => <option key={partner.id} value={partner.id}>{partner.name}</option>)}</select></Field><Field label="Nome jurídico ou referência interna"><input name="legal_name" defaultValue={item?.legal_name || ""}/></Field><Field label="Público prioritário"><input name="target_audience" defaultValue={item?.target_audience || ""}/></Field><Field label="Região de atuação"><input name="service_region" defaultValue={item?.service_region || ""}/></Field></div></Section>
+    <Section number="2" title="Atributos do tipo selecionado" description={`Campos adequados para ${segmentByCode(segment).label.toLowerCase()}.`}><DynamicProductFields segment={segment} item={item}/></Section>
+    <Section number="3" title="Condição e operação comercial" description="Ticket, SLA e principais argumentos de venda."><div className={pro.moneyGrid}><Field label="Ticket mínimo" hint="R$"><input name="minimum_ticket_reais" inputMode="decimal" defaultValue={item?.minimum_ticket_cents ? item.minimum_ticket_cents/100 : ""}/></Field><Field label="Ticket máximo" hint="R$"><input name="maximum_ticket_reais" inputMode="decimal" defaultValue={item?.maximum_ticket_cents ? item.maximum_ticket_cents/100 : ""}/></Field><Field label="SLA do lead" hint="minutos"><input name="lead_sla_minutes" type="number" min="5" max="1440" defaultValue={item?.lead_sla_minutes || 30}/></Field></div><div className={styles.formGrid}><Field label="Condição comercial resumida"><input name="payment" defaultValue={item?.metadata?.payment || ""}/></Field><Field label="Localização ou cobertura"><input name="location" defaultValue={item?.metadata?.location || ""}/></Field><Field label="Estilo, posicionamento ou benefício"><input name="lifestyle" defaultValue={item?.metadata?.lifestyle || ""}/></Field><Field label="Imagem de capa"><input name="image" type="url" defaultValue={item?.metadata?.image || ""} placeholder="Use preferencialmente a biblioteca de mídia"/></Field></div></Section>
+    <Section number="4" title="Apresentação, diferenciais e governança" description="Conteúdo que será usado nas páginas e campanhas."><Field label="Descrição comercial"><textarea name="description" rows="5" required defaultValue={item?.description || ""}/></Field><Field label="Diferenciais" hint="um por linha"><textarea name="features" rows="5" defaultValue={(item?.metadata?.features || []).join("\n")}/></Field><Field label="Resumo da alteração"><input name="change_summary" required placeholder="Descreva objetivamente o que foi criado ou alterado"/></Field><div className={pro.governance}><label className={pro.checkCard}><input name="training_required" type="checkbox" defaultChecked={item?.training_required ?? true}/><span>Exigir treinamento antes da atuação comercial.</span></label><div className={pro.summary}><b>Fluxo editorial:</b> este salvamento cria ou atualiza um rascunho. Aprovação e publicação permanecem etapas separadas.</div></div></Section>
     <FormActions onClose={onClose} busy={busy}/>
   </form>;
 }
@@ -99,59 +97,22 @@ export function CampaignForm({ item, products, developments, partners, onClose, 
   async function submit(event) {
     event.preventDefault(); setBusy(true);
     try {
-      const form = new FormData(event.currentTarget);
-      const values = Object.fromEntries(form.entries());
+      const form = new FormData(event.currentTarget); const values = Object.fromEntries(form.entries());
       values.alternative_discovery_enabled = form.get("alternative_discovery_enabled") === "on";
       values.interest_options = String(values.interest_options || "").split("\n").map(value => value.trim()).filter(Boolean);
       await request("upsert_campaign_v2", { p_campaign_id: item?.id || null, p_payload: values, p_expected_lock_version: item?.lock_version ?? null });
       setToast("Campanha salva como rascunho independente do produto."); onSaved(); onClose();
     } catch (error) { setToast(error.message, true); } finally { setBusy(false); }
   }
-  return <form className={styles.form} onSubmit={submit}>
-    <div className={styles.formGrid}>
-      <Field label="Título da campanha"><input name="title" required defaultValue={item?.title || ""} onBlur={event => { const slug = event.currentTarget.form.elements.slug; if (!slug.value) slug.value = slugify(event.target.value); }}/></Field>
-      <Field label="Slug"><input name="slug" required defaultValue={item?.slug || ""}/></Field>
-      <Field label="Produto"><select name="product_id" required defaultValue={item?.product_id || ""}><option value="">Selecione</option>{products.map(product => <option key={product.id} value={product.id}>{product.name}</option>)}</select></Field>
-      <Field label="Empreendimento"><select name="development_id" defaultValue={item?.development_id || ""}><option value="">Selecione</option>{developments.map(development => <option key={development.id} value={development.id}>{development.name}</option>)}</select></Field>
-      <Field label="Parceiro"><select name="partner_id" required defaultValue={item?.partner_id || ""}><option value="">Selecione</option>{partners.map(partner => <option key={partner.id} value={partner.id}>{partner.name}</option>)}</select></Field>
-      <Field label="Localização"><input name="location" required defaultValue={item?.location || ""}/></Field>
-      <Field label="Início"><input name="starts_at" type="datetime-local" defaultValue={item?.starts_at ? new Date(item.starts_at).toISOString().slice(0,16) : ""}/></Field>
-      <Field label="Término"><input name="ends_at" type="datetime-local" defaultValue={item?.ends_at ? new Date(item.ends_at).toISOString().slice(0,16) : ""}/></Field>
-      <Field label="Janela de atribuição" hint="dias"><input name="attribution_window_days" type="number" min="1" max="365" defaultValue={item?.attribution_window_days || 180}/></Field>
-      <Field label="Escopo de alternativas"><select name="alternative_discovery_scope" defaultValue={item?.alternative_discovery_scope || "same_organization"}><option value="disabled">Desabilitado</option><option value="same_development">Mesmo empreendimento</option><option value="same_organization">Mesma empresa</option><option value="network">Toda a rede</option></select></Field>
-      <Field label="Regra de conversão cruzada"><select name="conversion_reward_policy" defaultValue={item?.conversion_reward_policy || "destination_product_rule"}><option value="destination_product_rule">Regra do produto vendido</option><option value="source_campaign_rule">Regra da campanha original</option><option value="manual_review">Análise manual</option></select></Field>
-    </div>
-    <Field label="Resumo comercial"><textarea name="summary" rows="5" required defaultValue={item?.summary || ""}/></Field>
-    <Field label="Opções de interesse" hint="uma por linha"><textarea name="interest_options" rows="5" required defaultValue={(item?.interest_options || ["Quero conhecer o produto"]).join("\n")}/></Field>
-    <Field label="Resumo da alteração"><input name="change_summary" required placeholder="Informe o objetivo desta versão"/></Field>
-    <label className={styles.check}><input name="alternative_discovery_enabled" type="checkbox" defaultChecked={item?.alternative_discovery_enabled ?? true}/>Permitir investigação de alternativas somente após autorização</label>
-    <FormActions onClose={onClose} busy={busy}/>
-  </form>;
+  return <form className={`${styles.form} ${pro.formShell}`} onSubmit={submit}><Section number="1" title="Identidade da campanha" description="Vincule produto, parceiro e território."><div className={styles.formGrid}><Field label="Título da campanha"><input name="title" required defaultValue={item?.title || ""} onBlur={event => { const slug = event.currentTarget.form.elements.slug; if (!slug.value) slug.value = slugify(event.target.value); }}/></Field><Field label="Slug"><input name="slug" required defaultValue={item?.slug || ""}/></Field><Field label="Produto"><select name="product_id" required defaultValue={item?.product_id || ""}><option value="">Selecione</option>{products.map(product => <option key={product.id} value={product.id}>{product.name}</option>)}</select></Field><Field label="Empreendimento ou estrutura"><select name="development_id" defaultValue={item?.development_id || ""}><option value="">Selecione</option>{developments.map(development => <option key={development.id} value={development.id}>{development.name}</option>)}</select></Field><Field label="Parceiro"><select name="partner_id" required defaultValue={item?.partner_id || ""}><option value="">Selecione</option>{partners.map(partner => <option key={partner.id} value={partner.id}>{partner.name}</option>)}</select></Field><Field label="Localização ou mercado"><input name="location" required defaultValue={item?.location || ""}/></Field></div></Section><Section number="2" title="Vigência e atribuição" description="Defina prazo, proteção e política para alternativas."><div className={styles.formGrid}><Field label="Início"><input name="starts_at" type="datetime-local" defaultValue={item?.starts_at ? new Date(item.starts_at).toISOString().slice(0,16) : ""}/></Field><Field label="Término"><input name="ends_at" type="datetime-local" defaultValue={item?.ends_at ? new Date(item.ends_at).toISOString().slice(0,16) : ""}/></Field><Field label="Janela de atribuição" hint="dias"><input name="attribution_window_days" type="number" min="1" max="365" defaultValue={item?.attribution_window_days || 180}/></Field><Field label="Escopo de alternativas"><select name="alternative_discovery_scope" defaultValue={item?.alternative_discovery_scope || "same_organization"}><option value="disabled">Desabilitado</option><option value="same_development">Mesma estrutura</option><option value="same_organization">Mesma empresa</option><option value="network">Toda a rede</option></select></Field><Field label="Regra de conversão cruzada"><select name="conversion_reward_policy" defaultValue={item?.conversion_reward_policy || "destination_product_rule"}><option value="destination_product_rule">Regra do produto vendido</option><option value="source_campaign_rule">Regra da campanha original</option><option value="manual_review">Análise manual</option></select></Field></div></Section><Section number="3" title="Mensagem e conversão" description="Conteúdo apresentado ao conector e ao interessado."><Field label="Resumo comercial"><textarea name="summary" rows="5" required defaultValue={item?.summary || ""}/></Field><Field label="Opções de interesse" hint="uma por linha"><textarea name="interest_options" rows="5" required defaultValue={(item?.interest_options || ["Quero conhecer o produto"]).join("\n")}/></Field><Field label="Resumo da alteração"><input name="change_summary" required placeholder="Informe o objetivo desta versão"/></Field><label className={pro.checkCard}><input name="alternative_discovery_enabled" type="checkbox" defaultChecked={item?.alternative_discovery_enabled ?? true}/><span>Permitir investigação de alternativas somente após autorização expressa.</span></label></Section><FormActions onClose={onClose} busy={busy}/></form>;
 }
 
 export function RewardForm({ campaign, onClose, onSaved, setToast }) {
   const [busy, setBusy] = useState(false);
   async function submit(event) {
     event.preventDefault(); setBusy(true);
-    try {
-      const form = new FormData(event.currentTarget);
-      await request("set_reward_rule_v2", {
-        p_campaign_id: campaign.id,
-        p_amount_cents: Number(form.get("amount_cents")),
-        p_terms_version: String(form.get("terms_version")),
-        p_qualifying_event: "won",
-        p_change_summary: String(form.get("change_summary"))
-      });
-      setToast("Nova regra de recompensa criada como rascunho. Ela não afeta a regra publicada até a aprovação final."); onSaved(); onClose();
-    } catch (error) { setToast(error.message, true); } finally { setBusy(false); }
+    try { const form = new FormData(event.currentTarget); await request("set_reward_rule_v2", { p_campaign_id: campaign.id, p_amount_cents: Number(form.get("amount_cents")), p_terms_version: String(form.get("terms_version")), p_qualifying_event: "won", p_change_summary: String(form.get("change_summary")) }); setToast("Nova regra criada como rascunho financeiro."); onSaved(); onClose(); }
+    catch (error) { setToast(error.message, true); } finally { setBusy(false); }
   }
-  return <form className={styles.form} onSubmit={submit}>
-    <div className={styles.notice}><Icon name="shield"/><span><b>Versionamento financeiro</b>A regra vigente continua ativa até uma nova versão ser revisada, aprovada e publicada.</span></div>
-    <div className={styles.formGrid}>
-      <Field label="Valor da recompensa" hint="centavos"><input name="amount_cents" type="number" min="0" required defaultValue={campaign.reward_amount_cents ?? 0}/></Field>
-      <Field label="Versão dos termos"><input name="terms_version" required defaultValue={campaign.reward_terms_version || new Date().toISOString().slice(0,10)}/></Field>
-    </div>
-    <Field label="Justificativa"><textarea name="change_summary" rows="4" required placeholder="Explique o motivo da alteração financeira"/></Field>
-    <FormActions onClose={onClose} busy={busy} label="Criar regra em rascunho"/>
-  </form>;
+  return <form className={`${styles.form} ${pro.formShell}`} onSubmit={submit}><div className={styles.notice}><Icon name="shield"/><span><b>Versionamento financeiro</b>A regra vigente continua ativa até revisão, aprovação e publicação da nova versão.</span></div><Section number="1" title="Regra de recompensa" description="Valor, versão jurídica e justificativa."><div className={styles.formGrid}><Field label="Valor da recompensa" hint="centavos"><input name="amount_cents" type="number" min="0" required defaultValue={campaign.reward_amount_cents ?? 0}/></Field><Field label="Versão dos termos"><input name="terms_version" required defaultValue={campaign.reward_terms_version || new Date().toISOString().slice(0,10)}/></Field></div><Field label="Justificativa"><textarea name="change_summary" rows="4" required placeholder="Explique o motivo da alteração financeira"/></Field></Section><FormActions onClose={onClose} busy={busy} label="Criar regra em rascunho"/></form>;
 }
