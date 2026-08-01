@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import { ORGANIZATION_SLUG, POLICY_VERSION } from "@/lib/config";
 import { authAdminCreateConfirmedUser, authWithPassword, rpc } from "@/lib/supabase";
 import { applySessionCookies } from "@/lib/session";
+import { connectorApplicationReceivedEmail, sendTransactionalEmail } from "@/lib/transactional-email";
 
 const ALLOWED_SEGMENTS = new Set(["imoveis","veiculos","perfumaria","energia-solar","agronegocio","turismo","seguros","consorcios","saude","educacao","tecnologia","construcao","moda","investimentos","outros"]);
 const ALLOWED_CHANNELS = new Set(["WhatsApp","Instagram","Facebook","LinkedIn","TikTok","Telegram","E-mail","Presencialmente"]);
@@ -61,12 +62,7 @@ export async function POST(request) {
       email_confirmed_by_backend: true
     };
 
-    await authAdminCreateConfirmedUser({
-      email,
-      password: body.password,
-      metadata
-    });
-
+    await authAdminCreateConfirmedUser({ email, password: body.password, metadata });
     const session = await authWithPassword(email, body.password);
 
     let context = null;
@@ -74,11 +70,23 @@ export async function POST(request) {
       try { context = await rpc("get_my_app_context", {}, { accessToken: session.access_token }); } catch {}
     }
 
+    let welcomeEmail = { sent: false, reason: "not_attempted" };
+    try {
+      const message = connectorApplicationReceivedEmail({ fullName });
+      welcomeEmail = await sendTransactionalEmail({ to: email, ...message });
+    } catch (emailError) {
+      console.error("connector_welcome_email_failed", { message: emailError?.message || "unknown", emailDomain: email.split("@")[1] || "unknown" });
+      welcomeEmail = { sent: false, reason: "provider_error" };
+    }
+
     const response = NextResponse.json({
       ok: true,
       requiresEmailConfirmation: false,
       status: context?.profile_status || "invited",
-      message: "Conta criada. Você já pode acessar a plataforma; seu perfil seguirá para validação interna da Rede Conecta."
+      welcomeEmailQueued: welcomeEmail.sent === true,
+      message: welcomeEmail.sent
+        ? "Conta criada. Enviamos um e-mail de boas-vindas e seu perfil seguirá para validação interna da Rede Conecta."
+        : "Conta criada. Você já pode acessar a plataforma; seu perfil seguirá para validação interna da Rede Conecta."
     });
     applySessionCookies(response, session);
     return response;
