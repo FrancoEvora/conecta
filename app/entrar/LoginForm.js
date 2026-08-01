@@ -28,7 +28,7 @@ export default function LoginForm() {
     <PasswordField label="Senha" name="password" value={password} onChange={event => setPassword(event.target.value)} autoComplete="current-password"/>
     <button className="button button--orange button--block" disabled={state.status === "loading"}>{state.status === "loading" ? "Entrando…" : "Entrar"}<Icon name="arrow"/></button>
     {state.message && <p className="form-error">{state.message}</p>}
-    <div className="button-row" style={{ marginTop: 14 }}><Link className="text-link" href="/recuperar">Problemas para acessar?</Link><Link className="text-link" href="/cadastro">Quero ser conector</Link></div>
+    <div className="button-row" style={{ marginTop: 14, flexWrap: "wrap" }}><Link className="text-link" href="/recuperar">Problemas para acessar?</Link><Link className="text-link" href="/confirmar-email">Não recebeu a confirmação?</Link><Link className="text-link" href="/cadastro">Quero ser conector</Link></div>
     <small>Seu acesso é protegido por permissões, trilhas de auditoria e separação entre os diferentes perfis da plataforma.</small>
   </form>;
 }
