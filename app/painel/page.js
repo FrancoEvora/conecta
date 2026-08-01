@@ -10,7 +10,7 @@ export const dynamic = "force-dynamic";
 
 const launcherStyle = {
   position: "fixed", zIndex: 85, right: 18, bottom: 18, display: "flex", flexWrap: "wrap",
-  justifyContent: "flex-end", gap: 8, maxWidth: "min(620px, calc(100vw - 36px))"
+  justifyContent: "flex-end", gap: 8, maxWidth: "min(760px, calc(100vw - 36px))"
 };
 const linkStyle = {
   display: "inline-flex", alignItems: "center", gap: 8, minHeight: 42, padding: "0 14px", borderRadius: 12,
@@ -38,9 +38,11 @@ export default async function PortalPage() {
   const canManageAccess = context.portal_kind === "staff" && has("staff.manage");
   const canManageCatalog = context.portal_kind === "staff" && ["catalog.manage", "catalog.read", "catalog.edit", "catalog.approve", "catalog.publish", "pricing.manage", "inventory.manage"].some(has);
   const canSeeSocial = context.portal_kind === "connector" || (context.portal_kind === "staff" && has("social.analytics"));
+  const canSeeIntelligence = context.portal_kind === "connector" || context.portal_kind === "staff";
   return <>
     <ProfessionalAdminRedirector/>
-    {(canManageAccess || canManageCatalog || canSeeSocial) && <div style={launcherStyle}>
+    {(canManageAccess || canManageCatalog || canSeeSocial || canSeeIntelligence) && <div style={launcherStyle}>
+      {canSeeIntelligence && <Link href="/painel/inteligencia" style={{ ...linkStyle, background: "linear-gradient(135deg,#0d315c,#ff6500)" }}>Inteligência Conecta</Link>}
       {canSeeSocial && <Link href="/painel/compartilhamentos" style={linkStyle}>Distribuição rastreável</Link>}
       {canManageCatalog && <Link href="/painel/catalogo" style={{ ...linkStyle, background: "#ff6500" }}>Catálogo profissional</Link>}
       {canManageAccess && <Link href="/painel/acessos" style={{ ...linkStyle, background: "#fff", color: "#071c3a", border: "1px solid #dfe4e9" }}>Acessos e permissões</Link>}
