@@ -1,7 +1,7 @@
 import crypto from "node:crypto";
 import { NextResponse } from "next/server";
 import { ORGANIZATION_SLUG, POLICY_VERSION, SITE_URL } from "@/lib/config";
-import { authSignUp, rpc } from "@/lib/supabase";
+import { authSignUp, authWithPassword, rpc } from "@/lib/supabase";
 import { applySessionCookies } from "@/lib/session";
 
 const ALLOWED_SEGMENTS = new Set(["imoveis","veiculos","perfumaria","energia-solar","agronegocio","turismo","seguros","consorcios","saude","educacao","tecnologia","construcao","moda","investimentos","outros"]);
@@ -56,30 +56,40 @@ export async function POST(request) {
       connector_objective: clean(body.objective, 600),
       commercial_profile_version: "connector-dna-2026-07-31",
       terms_version: POLICY_VERSION,
-      signup_ip_hash: crypto.createHash("sha256").update(ip).digest("hex")
+      signup_ip_hash: crypto.createHash("sha256").update(ip).digest("hex"),
+      email_validation_mode: "internal_validation_temporary"
     };
 
-    const data = await authSignUp({
+    const signup = await authSignUp({
       email,
       password: body.password,
       metadata,
       redirectTo: `${SITE_URL}/entrar?confirmado=1`
     });
 
+    let session = signup;
+    if (!session?.access_token) {
+      try {
+        session = await authWithPassword(email, body.password);
+      } catch {
+        session = signup;
+      }
+    }
+
     let context = null;
-    if (data?.access_token) {
-      try { context = await rpc("get_my_app_context", {}, { accessToken: data.access_token }); } catch {}
+    if (session?.access_token) {
+      try { context = await rpc("get_my_app_context", {}, { accessToken: session.access_token }); } catch {}
     }
 
     const response = NextResponse.json({
       ok: true,
-      requiresEmailConfirmation: !data?.access_token,
+      requiresEmailConfirmation: false,
       status: context?.profile_status || "invited",
-      message: data?.access_token
-        ? "Conta criada. Seu perfil comercial seguirá para validação da Rede Conecta."
-        : "Conta criada. Confirme seu e-mail para concluir o cadastro; a equipe fará a validação do seu perfil em seguida."
+      message: session?.access_token
+        ? "Conta criada. Você já pode acessar a plataforma; seu perfil seguirá para validação interna da Rede Conecta."
+        : "Conta criada. Entre com seu e-mail e senha; seu perfil seguirá para validação interna da Rede Conecta."
     });
-    if (data?.access_token) applySessionCookies(response, data);
+    if (session?.access_token) applySessionCookies(response, session);
     return response;
   } catch (error) {
     const message = String(error?.message || "");
