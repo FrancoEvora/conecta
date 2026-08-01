@@ -6,7 +6,7 @@ import { SITE_URL } from "@/lib/config";
 export const metadata = {
   metadataBase: new URL(SITE_URL),
   title: { default: "Rede Conecta", template: "%s · Rede Conecta" },
-  description: "A infraestrutura comercial que transforma relacionamentos em oportunidades imobiliárias rastreáveis.",
+  description: "A rede de inteligência comercial que transforma confiança em oportunidades rastreáveis e receita.",
   applicationName: "Rede Conecta",
   manifest: "/manifest.webmanifest",
   icons: { icon: "/favicon.svg" },
@@ -14,8 +14,8 @@ export const metadata = {
     type: "website",
     locale: "pt_BR",
     siteName: "Rede Conecta",
-    title: "Rede Conecta · Relacionamento com infraestrutura comercial",
-    description: "Conectores originam oportunidades. A Rede Conecta opera. Empreendedores e corretores acompanham resultados com origem preservada."
+    title: "Rede Conecta · Transforme confiança em oportunidades",
+    description: "Conectores abrem portas. A Rede Conecta recomenda, opera e acompanha. Empresas vendem com origem preservada."
   }
 };
 
