@@ -1,14 +1,62 @@
 <!doctype html>
 <html lang="pt-BR">
-<head><meta charset="utf-8"><meta name="viewport" content="width=device-width"><title>Recupere seu acesso</title></head>
-<body style="margin:0;background:#f4f1ec;font-family:Arial,Helvetica,sans-serif;color:#14233d">
-<table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background:#f4f1ec;padding:28px 12px"><tr><td align="center">
-<table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="max-width:620px;background:#fff;border-radius:22px;overflow:hidden;box-shadow:0 18px 50px rgba(7,28,58,.10)">
-<tr><td style="background:#071c3a;padding:26px 34px;color:#fff"><div style="font-size:22px;font-weight:800;letter-spacing:-.5px"><span style="color:#fff">REDE</span> <span style="color:#ff6500">CONECTA</span></div><div style="margin-top:5px;font-size:12px;color:#c9d3df">Acesso protegido à sua rede de oportunidades.</div></td></tr>
-<tr><td style="padding:38px 34px 20px"><div style="font-size:12px;font-weight:800;letter-spacing:1.2px;color:#ff6500">RECUPERAÇÃO DE ACESSO</div><h1 style="margin:12px 0 14px;font-size:30px;line-height:1.12;color:#071c3a">Vamos recuperar seu acesso.</h1><p style="margin:0 0 16px;line-height:1.65;color:#55637a">Recebemos uma solicitação para criar uma nova senha para a conta <strong>{{ .Email }}</strong>.</p><p style="margin:0 0 20px;line-height:1.65;color:#55637a">Use o botão abaixo para acessar a página segura da Rede Conecta e escolher uma nova senha.</p>
-<table role="presentation" cellspacing="0" cellpadding="0"><tr><td style="border-radius:12px;background:#ff6500"><a href="{{ .ConfirmationURL }}" style="display:inline-block;padding:15px 25px;color:#fff;text-decoration:none;font-weight:800">Criar nova senha</a></td></tr></table>
-<div style="margin-top:24px;padding:16px;border-radius:12px;background:#f3f6f9;color:#536178;font-size:13px;line-height:1.6"><strong style="color:#071c3a">Por segurança:</strong><br>• o link possui validade limitada;<br>• ele deve ser usado apenas por você;<br>• nunca solicitaremos sua senha por e-mail ou WhatsApp.</div></td></tr>
-<tr><td style="padding:8px 34px 34px"><p style="margin:0;line-height:1.6;color:#667286;font-size:13px">Não solicitou esta alteração? Ignore esta mensagem. Sua senha atual continuará válida.</p></td></tr>
-<tr><td style="padding:20px 34px;background:#f8f6f2;color:#7a8595;font-size:11px;line-height:1.5">Rede Conecta · Segurança, origem protegida e rastreabilidade.<br>Esta é uma mensagem automática de segurança.</td></tr>
-</table></td></tr></table>
-</body></html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="x-apple-disable-message-reformatting">
+  <title>Recupere seu acesso | Rede Conecta</title>
+  <style>
+    @media only screen and (max-width: 620px) {
+      .shell { width: 100% !important; border-radius: 0 !important; }
+      .pad { padding-left: 24px !important; padding-right: 24px !important; }
+      .headline { font-size: 28px !important; line-height: 1.14 !important; }
+      .button { display: block !important; text-align: center !important; }
+    }
+  </style>
+</head>
+<body style="margin:0;padding:0;background:#eef2f6;font-family:Arial,Helvetica,sans-serif;color:#13243e;-webkit-font-smoothing:antialiased;">
+  <div style="display:none;max-height:0;overflow:hidden;opacity:0;color:transparent;">Use este link seguro para criar uma nova senha na Rede Conecta.</div>
+  <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background:#eef2f6;">
+    <tr><td align="center" style="padding:30px 12px;">
+      <table role="presentation" class="shell" width="620" cellspacing="0" cellpadding="0" border="0" style="width:620px;max-width:620px;background:#ffffff;border-radius:22px;overflow:hidden;box-shadow:0 18px 50px rgba(7,28,58,.10);">
+        <tr>
+          <td class="pad" style="background:#071c3a;padding:28px 36px;">
+            <div style="font-size:23px;font-weight:800;letter-spacing:-.5px;color:#ffffff;">REDE <span style="color:#ff6500;">CONECTA</span></div>
+            <div style="margin-top:6px;font-size:12px;line-height:1.5;color:#c8d3df;">Acesso protegido à sua rede de oportunidades.</div>
+          </td>
+        </tr>
+        <tr>
+          <td class="pad" style="padding:38px 36px 22px;">
+            <div style="font-size:12px;font-weight:800;letter-spacing:1.25px;color:#ff6500;">RECUPERAÇÃO DE ACESSO</div>
+            <h1 class="headline" style="margin:12px 0 16px;font-size:32px;line-height:1.12;color:#071c3a;">Vamos criar uma nova senha.</h1>
+            <p style="margin:0 0 16px;font-size:16px;line-height:1.7;color:#536178;">Recebemos uma solicitação para recuperar o acesso da conta <strong style="color:#071c3a;">{{ .Email }}</strong>.</p>
+            <p style="margin:0 0 24px;font-size:16px;line-height:1.7;color:#536178;">Use o botão abaixo para abrir a página segura da Rede Conecta e definir uma nova senha.</p>
+            <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
+              <tr><td align="left">
+                <a class="button" href="{{ .ConfirmationURL }}" style="display:inline-block;background:#ff6500;color:#ffffff;text-decoration:none;font-size:15px;font-weight:800;line-height:1;padding:17px 26px;border-radius:12px;box-shadow:0 8px 20px rgba(255,101,0,.25);">Criar nova senha</a>
+              </td></tr>
+            </table>
+            <div style="margin-top:26px;padding:18px;border-radius:14px;background:#f4f7fa;border:1px solid #e4eaf0;">
+              <div style="font-size:13px;font-weight:800;color:#071c3a;margin-bottom:8px;">Proteção da sua conta</div>
+              <div style="font-size:13px;line-height:1.75;color:#5f6d80;">• O link possui validade limitada.<br>• Ele deve ser utilizado apenas por você.<br>• A Rede Conecta nunca solicitará sua senha por e-mail, telefone ou WhatsApp.</div>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td class="pad" style="padding:0 36px 34px;">
+            <div style="font-size:13px;line-height:1.65;color:#6b7789;">Se o botão não funcionar, copie e cole este endereço no navegador:</div>
+            <div style="margin-top:8px;font-size:12px;line-height:1.6;word-break:break-all;color:#315b8a;">{{ .ConfirmationURL }}</div>
+            <div style="margin-top:20px;padding:16px;border-radius:12px;background:#fff5ed;color:#665144;font-size:13px;line-height:1.6;"><strong style="color:#7b3c13;">Não reconhece esta solicitação?</strong> Ignore esta mensagem. Sua senha atual continuará válida.</div>
+          </td>
+        </tr>
+        <tr>
+          <td class="pad" style="padding:22px 36px;background:#f8fafc;border-top:1px solid #e8edf2;">
+            <div style="font-size:12px;line-height:1.6;color:#7a8595;">Esta é uma comunicação automática de segurança. Não responda com informações pessoais ou credenciais.</div>
+            <div style="margin-top:12px;font-size:11px;line-height:1.5;color:#98a2b0;">Rede Conecta · Segurança, origem protegida e rastreabilidade.</div>
+          </td>
+        </tr>
+      </table>
+    </td></tr>
+  </table>
+</body>
+</html>
