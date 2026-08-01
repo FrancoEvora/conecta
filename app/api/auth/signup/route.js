@@ -1,7 +1,7 @@
 import crypto from "node:crypto";
 import { NextResponse } from "next/server";
-import { ORGANIZATION_SLUG, POLICY_VERSION, SITE_URL } from "@/lib/config";
-import { authSignUp, authWithPassword, rpc } from "@/lib/supabase";
+import { ORGANIZATION_SLUG, POLICY_VERSION } from "@/lib/config";
+import { authAdminCreateConfirmedUser, authWithPassword, rpc } from "@/lib/supabase";
 import { applySessionCookies } from "@/lib/session";
 
 const ALLOWED_SEGMENTS = new Set(["imoveis","veiculos","perfumaria","energia-solar","agronegocio","turismo","seguros","consorcios","saude","educacao","tecnologia","construcao","moda","investimentos","outros"]);
@@ -57,24 +57,17 @@ export async function POST(request) {
       commercial_profile_version: "connector-dna-2026-07-31",
       terms_version: POLICY_VERSION,
       signup_ip_hash: crypto.createHash("sha256").update(ip).digest("hex"),
-      email_validation_mode: "internal_validation_temporary"
+      email_validation_mode: "internal_validation_temporary",
+      email_confirmed_by_backend: true
     };
 
-    const signup = await authSignUp({
+    await authAdminCreateConfirmedUser({
       email,
       password: body.password,
-      metadata,
-      redirectTo: `${SITE_URL}/entrar?confirmado=1`
+      metadata
     });
 
-    let session = signup;
-    if (!session?.access_token) {
-      try {
-        session = await authWithPassword(email, body.password);
-      } catch {
-        session = signup;
-      }
-    }
+    const session = await authWithPassword(email, body.password);
 
     let context = null;
     if (session?.access_token) {
@@ -85,15 +78,21 @@ export async function POST(request) {
       ok: true,
       requiresEmailConfirmation: false,
       status: context?.profile_status || "invited",
-      message: session?.access_token
-        ? "Conta criada. Você já pode acessar a plataforma; seu perfil seguirá para validação interna da Rede Conecta."
-        : "Conta criada. Entre com seu e-mail e senha; seu perfil seguirá para validação interna da Rede Conecta."
+      message: "Conta criada. Você já pode acessar a plataforma; seu perfil seguirá para validação interna da Rede Conecta."
     });
-    if (session?.access_token) applySessionCookies(response, session);
+    applySessionCookies(response, session);
     return response;
   } catch (error) {
     const message = String(error?.message || "");
     const duplicate = /already|registered|exists|duplicate/i.test(message);
-    return NextResponse.json({ error: duplicate ? "Este e-mail já possui cadastro. Use a área de acesso ou recupere sua senha." : "Não foi possível criar sua conta agora. Revise os dados e tente novamente." }, { status: duplicate ? 409 : 500 });
+    const missingAdminKey = error?.code === "missing_service_role" || /configuração administrativa/i.test(message);
+
+    return NextResponse.json({
+      error: duplicate
+        ? "Este e-mail já possui cadastro. Use a área de acesso ou recupere sua senha."
+        : missingAdminKey
+          ? "O cadastro está temporariamente indisponível por configuração interna. A equipe técnica já foi avisada."
+          : "Não foi possível criar sua conta agora. Revise os dados e tente novamente."
+    }, { status: duplicate ? 409 : missingAdminKey ? 503 : 500 });
   }
 }
