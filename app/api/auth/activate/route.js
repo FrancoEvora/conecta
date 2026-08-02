@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server";
-import { SITE_URL } from "@/lib/config";
-import { authSignUp, rpc } from "@/lib/supabase";
+import { authAdminCreateConfirmedUser, authWithPassword, rpc } from "@/lib/supabase";
 import { applySessionCookies } from "@/lib/session";
 
 export async function POST(request) {
@@ -10,6 +9,7 @@ export async function POST(request) {
     const email = String(body.email || "").trim().toLowerCase();
     const invitationRows = await rpc("resolve_account_invite", { p_token: token });
     const invitation = Array.isArray(invitationRows) ? invitationRows[0] : invitationRows;
+
     if (!invitation || invitation.status !== "pending") {
       return NextResponse.json({ error: "Este convite é inválido, já foi utilizado ou expirou." }, { status: 400 });
     }
@@ -22,21 +22,48 @@ export async function POST(request) {
     if (!body.termsAccepted) {
       return NextResponse.json({ error: "É necessário aceitar os termos de acesso." }, { status: 400 });
     }
-    const data = await authSignUp({
+
+    const created = await authAdminCreateConfirmedUser({
       email,
       password: body.password,
-      metadata: { signup_kind: "account_invite", account_invite_token: token },
-      redirectTo: `${SITE_URL}/entrar?ativado=1`
+      metadata: {
+        signup_kind: "account_invite",
+        account_invite_token: token,
+        account_invite_id: invitation.invite_id,
+        target_kind: invitation.target_kind,
+        full_name: invitation.display_name,
+        email_confirmed_by_backend: true
+      }
     });
+    const authUserId = created?.id || created?.user?.id;
+    if (!authUserId) throw new Error("invited_user_not_created");
+
+    await rpc("provision_invited_member", {
+      p_token: token,
+      p_auth_user_id: authUserId,
+      p_email: email
+    });
+
+    const session = await authWithPassword(email, body.password);
     const response = NextResponse.json({
       ok: true,
-      requiresEmailConfirmation: !data?.access_token,
-      message: data?.access_token ? "Acesso ativado com sucesso." : "Acesso criado. Confirme seu e-mail antes de entrar."
+      requiresEmailConfirmation: false,
+      message: invitation.target_kind === "broker"
+        ? "Acesso de corretor ativado com sucesso. Você já pode entrar na plataforma."
+        : "Acesso ativado com sucesso. Você já pode entrar na plataforma."
     });
-    if (data?.access_token) applySessionCookies(response, data);
+    applySessionCookies(response, session);
     return response;
   } catch (error) {
     const message = String(error?.message || "");
-    return NextResponse.json({ error: /registered|already/i.test(message) ? "Este e-mail já possui conta. Entre normalmente ou recupere sua senha." : "Não foi possível ativar o convite. Verifique os dados e tente novamente." }, { status: 400 });
+    const duplicate = /registered|already|exists|duplicate/i.test(message);
+    const missingAdmin = /missing_service_role|configuração administrativa/i.test(message);
+    return NextResponse.json({
+      error: duplicate
+        ? "Este e-mail já possui conta. Entre normalmente ou recupere sua senha."
+        : missingAdmin
+          ? "A ativação está temporariamente indisponível por configuração interna."
+          : "Não foi possível ativar o convite. Verifique os dados e tente novamente."
+    }, { status: duplicate ? 409 : missingAdmin ? 503 : 400 });
   }
 }
