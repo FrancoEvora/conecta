@@ -1,11 +1,11 @@
 import { redirect } from "next/navigation";
 import { rpc } from "@/lib/supabase";
 import { getServerUser } from "@/lib/session";
-import VisibleSdrConsole from "./VisibleSdrConsole";
+import UnifiedOpportunityConsole from "./UnifiedOpportunityConsole";
 
 export const metadata = {
-  title: "Distribuição de atendimentos · Rede Conecta",
-  description: "Qualificação SDR e encaminhamento manual ou automático para vendedores e especialistas.",
+  title: "Central de Oportunidades · Rede Conecta",
+  description: "SDR, qualificação e distribuição administrativa em uma única jornada operacional.",
   robots: { index: false, follow: false }
 };
 export const dynamic = "force-dynamic";
@@ -29,5 +29,5 @@ export default async function SdrPage() {
   if (!permitted) redirect("/painel");
 
   const data = await rpc("admin_sdr_console", { p_limit: 500 }, { accessToken: session.accessToken });
-  return <VisibleSdrConsole context={context} initialData={data}/>;
+  return <UnifiedOpportunityConsole context={context} initialData={data}/>;
 }
