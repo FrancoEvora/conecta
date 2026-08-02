@@ -3,7 +3,11 @@ import { rpc } from "@/lib/supabase";
 import { getServerUser } from "@/lib/session";
 import CatalogConsole from "./CatalogConsole";
 
-export const metadata = { title: "Catálogo profissional", robots: { index: false, follow: false } };
+export const metadata = {
+  title: "Central de Produtos",
+  description: "Cadastre produtos por categoria comercial, organize campanhas e publique o portfólio da Rede Conecta.",
+  robots: { index: false, follow: false }
+};
 export const dynamic = "force-dynamic";
 
 export default async function ProfessionalCatalogPage() {
@@ -22,8 +26,14 @@ export default async function ProfessionalCatalogPage() {
 
   const permissions = context.permissions || [];
   const permitted = context.portal_kind === "staff" && [
-    "platform.all", "catalog.manage", "catalog.read", "catalog.edit", "catalog.approve",
-    "catalog.publish", "pricing.manage", "inventory.manage"
+    "platform.all",
+    "catalog.manage",
+    "catalog.read",
+    "catalog.edit",
+    "catalog.approve",
+    "catalog.publish",
+    "pricing.manage",
+    "inventory.manage"
   ].some(permission => permissions.includes(permission));
   if (!permitted) redirect("/painel");
 
