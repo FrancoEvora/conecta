@@ -15,6 +15,7 @@ const operations = {
   connector_applications: "admin_list_connector_applications",
   review_connector: "admin_review_connector_application",
   create_account_invite: "admin_create_account_invite",
+  create_specialist_invite: "admin_create_specialist_invite",
   partners: "admin_list_partners",
   upsert_partner: "admin_upsert_partner",
 
@@ -83,22 +84,16 @@ const operations = {
 export async function POST(request) {
   const session = await getValidRouteSession();
   if (!session) {
-    return clearSessionCookies(
-      NextResponse.json({ error: "Sessão expirada." }, { status: 401 })
-    );
+    return clearSessionCookies(NextResponse.json({ error: "Sessão expirada." }, { status: 401 }));
   }
 
   try {
     const body = await request.json();
     const operation = String(body.operation || "");
     const rpcName = operations[operation];
-    if (!rpcName) {
-      return NextResponse.json({ error: "Operação não permitida." }, { status: 400 });
-    }
+    if (!rpcName) return NextResponse.json({ error: "Operação não permitida." }, { status: 400 });
 
-    const params = body.params && typeof body.params === "object" && !Array.isArray(body.params)
-      ? body.params
-      : {};
+    const params = body.params && typeof body.params === "object" && !Array.isArray(body.params) ? body.params : {};
     const data = await rpc(rpcName, params, { accessToken: session.accessToken });
     const response = NextResponse.json({ ok: true, data });
     if (session.refreshedSession) applySessionCookies(response, session.refreshedSession);
