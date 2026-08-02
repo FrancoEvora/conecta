@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { rpc } from "@/lib/supabase";
 import { getServerUser } from "@/lib/session";
 import ConectaOS from "./ConectaOS";
+import CoherentCenterRedirector from "./CoherentCenterRedirector";
 
 export const metadata = {
   title: "Conecta OS",
@@ -34,9 +35,12 @@ export default async function ConectaOSPage() {
 
   const products = await safeRpc("list_public_products", {}, session.accessToken, []);
 
-  return <ConectaOS
-    context={context}
-    snapshot={snapshot || {}}
-    products={Array.isArray(products) ? products : []}
-  />;
+  return <>
+    {context.portal_kind === "staff" && <CoherentCenterRedirector/>}
+    <ConectaOS
+      context={context}
+      snapshot={snapshot || {}}
+      products={Array.isArray(products) ? products : []}
+    />
+  </>;
 }
