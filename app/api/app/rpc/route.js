@@ -40,6 +40,8 @@ const operations = {
   publish_due_catalog: "publish_due_catalog_entities",
   product_financial_rules: "admin_list_product_financial_rules",
   set_product_financial_rule: "admin_set_product_financial_rule",
+  specialist_financial_rules: "admin_list_specialist_financial_rules",
+  set_specialist_financial_rule: "admin_set_specialist_financial_rule",
 
   share_studio_invitation: "get_share_studio_invitation",
   create_social_share: "create_my_social_share_link",
@@ -84,6 +86,11 @@ const operations = {
   connector_mark_notification_read: "connector_mark_notification_read",
   partner_snapshot: "partner_portal_snapshot",
   broker_snapshot: "broker_portal_snapshot",
+  specialist_snapshot: "specialist_portal_snapshot",
+  specialist_accept_connection: "specialist_accept_connection",
+  specialist_update_stage: "specialist_update_connection_stage",
+  specialist_report_sale: "specialist_report_sale",
+  specialist_mark_notification_read: "specialist_mark_notification_read",
   accept_partner_terms: "partner_accept_non_circumvention_terms",
   create_invitation: "create_my_invitation"
 };
@@ -108,11 +115,11 @@ export async function POST(request) {
   } catch (error) {
     const message = String(error?.message || "Falha ao processar a operação.");
     const normalized = message.replaceAll("_", " ");
-    const status = /permission|active .* required|denied/i.test(normalized)
+    const status = /permission|active .* required|denied|not assigned/i.test(normalized)
       ? 403
       : /stale|conflict/i.test(normalized)
         ? 409
-        : /not found|invalid|required|mismatch|preflight failed|workflow state/i.test(normalized)
+        : /not found|invalid|required|mismatch|preflight failed|workflow state|closed/i.test(normalized)
           ? 400
           : 500;
     return NextResponse.json({ error: normalized }, { status });
