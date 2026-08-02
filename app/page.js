@@ -3,31 +3,31 @@ import { Icon, NetworkMark } from "@/components/UI";
 import styles from "./home-v2.module.css";
 
 const journey = [
-  ["01", "Oportunidade confiável", "A empresa publica um produto, uma campanha e uma regra econômica clara."],
-  ["02", "Pessoa certa", "A plataforma recomenda a oportunidade a conectores com maior afinidade de mercado e região."],
-  ["03", "Confiança abre a porta", "O conector compartilha porque conhece a pessoa e acredita que a oportunidade pode fazer sentido."],
-  ["04", "A Conecta opera", "Autorização, qualificação, atendimento, agenda, proposta e acompanhamento ficam centralizados."],
-  ["05", "Receita e recompensa", "Negócio validado: a empresa vende, a Rede Conecta monetiza e o conector recebe conforme a campanha."]
+  ["01", "Oportunidade confiável", "A empresa publica um produto, uma campanha e regras comerciais claras."],
+  ["02", "Apresentação com confiança", "O conector reconhece uma oportunidade e apresenta a pessoa certa, sem precisar vender."],
+  ["03", "Qualificação SDR", "A Rede Conecta confirma interesse, necessidade, momento, orçamento e disponibilidade."],
+  ["04", "Atendimento no momento certo", "Somente oportunidades qualificadas são distribuídas ao profissional mais adequado."],
+  ["05", "Negócio rastreável", "Origem, atendimento, conversão e recompensa permanecem registrados até o resultado."]
 ];
 
 const audiences = [
-  ["Conector", "Use sua reputação para criar oportunidades sem precisar vender.", "/conectores", "user"],
-  ["Empresa", "Ative uma rede comercial distribuída com origem rastreável e operação central.", "/empreendedores", "building"],
-  ["Corretor", "Trabalhe com portfólio, prioridade e informação organizada.", "/corretores", "handshake"]
+  ["Conector", "Você apresenta pessoas. A Rede Conecta qualifica, atende e conduz todo o restante.", "/conectores", "user"],
+  ["Empresa", "Transforme relacionamentos em oportunidades qualificadas, com origem protegida e operação central.", "/empreendedores", "building"],
+  ["Especialista", "Receba oportunidades no momento adequado, com briefing completo e contexto comercial.", "/corretores", "handshake"]
 ];
 
 const platform = [
-  ["Connect", "DNA Comercial, validação e reputação."],
-  ["Match", "Afinidade entre pessoas, mercados e oportunidades."],
-  ["Operate", "CRM, atendimento, agenda, proposta e negócio."],
-  ["Intelligence", "TrustScore, radar, recomendações e prioridades."],
-  ["Growth", "Campanhas, links, redes sociais e conversão."],
-  ["Capital", "Recompensas, ROI, VGV e conciliação."]
+  ["Trust", "Origem protegida, consentimento e regras de atribuição."],
+  ["Match", "Afinidade entre pessoas, mercados, regiões e oportunidades."],
+  ["SDR", "Qualificação preliminar, score, resumo e recomendação."],
+  ["Routing", "Distribuição automática ou manual após a triagem."],
+  ["Operate", "Atendimento, agenda, proposta, documentos e negócio."],
+  ["Capital", "Recompensas, conciliação, ROI e resultado auditável."]
 ];
 
 export const metadata = {
-  title: "Rede Conecta · Transforme confiança em receita",
-  description: "Use a sua confiança e credibilidade para ganhar dinheiro conectando pessoas a oportunidades reais, com atendimento e rastreamento pela Rede Conecta."
+  title: "Rede Conecta · Infraestrutura comercial para relações de confiança",
+  description: "A Rede Conecta transforma apresentações de confiança em oportunidades qualificadas, distribuídas e rastreáveis até o negócio."
 };
 
 export default function HomePage() {
@@ -45,56 +45,56 @@ export default function HomePage() {
         <div className={styles.heroGlow}/>
         <div className={styles.heroInner}>
           <div className={styles.heroCopy}>
-            <span className={styles.kicker}>REDE DE INTELIGÊNCIA COMERCIAL DISTRIBUÍDA</span>
-            <h1>Use a sua confiança e credibilidade para <em>ganhar dinheiro.</em></h1>
-            <p>Você apresenta pessoas a oportunidades reais. A Rede Conecta qualifica, atende e conduz o negócio. A origem fica registrada e, quando a campanha prevê recompensa e o negócio é validado, você recebe.</p>
+            <span className={styles.kicker}>INFRAESTRUTURA COMERCIAL DE CONFIANÇA</span>
+            <h1>Sua confiança abre portas. A Rede Conecta transforma oportunidades em <em>negócios.</em></h1>
+            <p>Você apresenta pessoas a oportunidades que realmente podem fazer sentido. A Rede Conecta confirma o interesse, qualifica o momento, distribui ao profissional adequado e acompanha tudo até o resultado.</p>
             <div className={styles.ctas}><Link href="/cadastro">Criar meu perfil de conector <Icon name="arrow"/></Link><Link href="/empreendedores">Quero vender pela rede</Link></div>
-            <div className={styles.proof}><span><Icon name="shield"/>Origem protegida</span><span><Icon name="headset"/>Operação profissional</span><span><Icon name="money"/>Regras transparentes</span></div>
+            <div className={styles.proof}><span><Icon name="shield"/>Origem protegida</span><span><Icon name="headset"/>Qualificação SDR</span><span><Icon name="target"/>Distribuição inteligente</span></div>
           </div>
 
           <div className={styles.heroProduct}>
-            <div className={styles.productTop}><span>INTELIGÊNCIA CONECTA</span><b>Ao vivo</b></div>
+            <div className={styles.productTop}><span>OPERAÇÃO CONECTA</span><b>Ao vivo</b></div>
             <div className={styles.matchCard}>
-              <div><small>Melhor oportunidade para seu perfil</small><h2>Solaris Residencial</h2><p>Imóveis · famílias · empresários · região de influência</p></div>
-              <strong>94%<small>afinidade</small></strong>
+              <div><small>Oportunidade em qualificação</small><h2>Solaris Residencial</h2><p>Origem preservada · SDR ativo · atendimento condicionado ao momento</p></div>
+              <strong>91<small>score SDR</small></strong>
             </div>
             <div className={styles.signalGrid}>
-              <article><Icon name="user"/><span><small>DNA comercial</small><b>Imóveis + Agro</b></span></article>
-              <article><Icon name="shield"/><span><small>TrustScore</small><b>Em evolução</b></span></article>
-              <article><Icon name="target"/><span><small>Próxima ação</small><b>Compartilhar</b></span></article>
+              <article><Icon name="link"/><span><small>Origem</small><b>Protegida</b></span></article>
+              <article><Icon name="headset"/><span><small>Triagem</small><b>Concluída</b></span></article>
+              <article><Icon name="target"/><span><small>Próxima ação</small><b>Distribuir</b></span></article>
               <article><Icon name="money"/><span><small>Resultado</small><b>Rastreável</b></span></article>
             </div>
-            <div className={styles.aiPrompt}><span>Copiloto</span><p>“Lembrei de você porque este produto combina com o momento que comentou comigo.”</p><button>Preparar abordagem <Icon name="arrow" size={17}/></button></div>
+            <div className={styles.aiPrompt}><span>Briefing do SDR</span><p>“Interesse alto, decisão em até 30 dias, precisa de simulação financeira e aceita contato hoje à tarde.”</p><button>Encaminhar ao especialista <Icon name="arrow" size={17}/></button></div>
           </div>
         </div>
       </section>
 
       <section className={styles.definition}>
-        <div><span>EM UMA FRASE</span><strong>A Rede Conecta descobre quem tem a confiança certa para abrir a porta de um negócio e organiza todo o caminho até o resultado.</strong></div>
+        <div><span>EM UMA FRASE</span><strong>Você apresenta pessoas. Nós qualificamos, distribuímos, operamos e protegemos a origem até o negócio.</strong></div>
       </section>
 
       <section className={styles.section} id="como-funciona">
         <div className={styles.container}>
-          <div className={styles.heading}><span>COMO O DINHEIRO ACONTECE</span><h2>Confiança só vira receita quando existe <em>processo.</em></h2><p>A tecnologia não remunera um simples envio de link. Ela registra e coordena um ciclo comercial completo.</p></div>
+          <div className={styles.heading}><span>COMO A OPORTUNIDADE AVANÇA</span><h2>Confiança só vira resultado quando existe <em>processo.</em></h2><p>A Rede Conecta não entrega contatos crus. Ela conduz uma jornada comercial com consentimento, qualificação e contexto.</p></div>
           <div className={styles.journey}>{journey.map(([number,title,text]) => <article key={number}><span>{number}</span><h3>{title}</h3><p>{text}</p></article>)}</div>
         </div>
       </section>
 
       <section className={`${styles.section} ${styles.darkSection}`}>
         <div className={styles.container}>
-          <div className={styles.headingDark}><span>UM NOVO CANAL DE DISTRIBUIÇÃO</span><h2>Não é pirâmide. Não é disparo em massa. Não é venda improvisada.</h2><p>É uma infraestrutura que combina produto confiável, recomendação pessoal, consentimento, operação comercial e rastreabilidade.</p></div>
+          <div className={styles.headingDark}><span>MAIS DO QUE UMA PLATAFORMA DE INDICAÇÕES</span><h2>Uma infraestrutura comercial que decide quando e para quem cada oportunidade deve avançar.</h2><p>O conector abre a porta. O SDR protege a experiência. A operação encaminha somente no momento adequado.</p></div>
           <div className={styles.principles}>
-            <article><Icon name="shield"/><h3>Qualidade antes de volume</h3><p>Produtos, campanhas e conectores passam por validação.</p></article>
-            <article><Icon name="link"/><h3>Origem reconhecida</h3><p>Cada compartilhamento possui trilha própria até o negócio.</p></article>
-            <article><Icon name="headset"/><h3>Atendimento central</h3><p>O conector não precisa negociar nem receber documentos.</p></article>
-            <article><Icon name="chart"/><h3>Resultado mensurável</h3><p>Empresas acompanham funil, ROI, negócios e VGV.</p></article>
+            <article><Icon name="shield"/><h3>Origem inviolável</h3><p>Cada oportunidade mantém conector, campanha, produto e trilha de atribuição.</p></article>
+            <article><Icon name="headset"/><h3>SDR antes do humano</h3><p>Necessidade, momento e disponibilidade são confirmados antes da distribuição.</p></article>
+            <article><Icon name="target"/><h3>Roteamento inteligente</h3><p>Distribuição automática por elegibilidade e capacidade ou escolha manual da gestão.</p></article>
+            <article><Icon name="chart"/><h3>Resultado auditável</h3><p>Atendimento, conversão, negócio e recompensa ficam conciliados na mesma operação.</p></article>
           </div>
         </div>
       </section>
 
       <section className={styles.section}>
         <div className={styles.container}>
-          <div className={styles.heading}><span>TRÊS JORNADAS</span><h2>Cada participante entende claramente <em>o que ganha.</em></h2></div>
+          <div className={styles.heading}><span>TRÊS JORNADAS</span><h2>Cada participante recebe apenas <em>a próxima ação relevante.</em></h2></div>
           <div className={styles.audienceGrid}>{audiences.map(([title,text,href,icon]) => <Link href={href} key={title}><span><Icon name={icon}/></span><small>PARA</small><h3>{title}</h3><p>{text}</p><b>Conhecer jornada <Icon name="arrow" size={17}/></b></Link>)}</div>
         </div>
       </section>
@@ -102,17 +102,17 @@ export default function HomePage() {
       <section className={`${styles.section} ${styles.softSection}`} id="plataforma">
         <div className={styles.container}>
           <div className={styles.platformGrid}>
-            <div className={styles.platformCopy}><span>REDE CONECTA 2.0</span><h2>Um sistema operacional para a <em>confiança comercial.</em></h2><p>O software organiza a rede em centros especializados, mas apresenta a cada pessoa apenas a próxima ação relevante.</p><Link href="/entrar">Acessar plataforma <Icon name="arrow"/></Link></div>
+            <div className={styles.platformCopy}><span>REDE CONECTA</span><h2>O sistema operacional da <em>confiança comercial.</em></h2><p>Da apresentação inicial à distribuição humana, cada etapa tem regras, evidências e responsabilidade definida.</p><Link href="/entrar">Acessar plataforma <Icon name="arrow"/></Link></div>
             <div className={styles.platformCards}>{platform.map(([title,text],index) => <article key={title}><span>{String(index+1).padStart(2,"0")}</span><div><h3>{title} Center</h3><p>{text}</p></div></article>)}</div>
           </div>
         </div>
       </section>
 
       <section className={styles.finalCta}>
-        <div><span>SEU RELACIONAMENTO JÁ TEM VALOR</span><h2>Agora ele pode ter infraestrutura, inteligência e resultado.</h2><p>Crie seu perfil, escolha os mercados em que possui credibilidade e descubra oportunidades compatíveis com a sua rede.</p><div className={styles.ctas}><Link href="/cadastro">Começar como conector <Icon name="arrow"/></Link><Link href="/empreendedores">Integrar minha empresa</Link></div></div>
+        <div><span>VOCÊ NÃO PRECISA VENDER</span><h2>Você apresenta a pessoa certa. A Rede Conecta conduz todo o restante.</h2><p>Crie seu perfil, escolha os mercados em que possui credibilidade e apresente oportunidades com origem protegida.</p><div className={styles.ctas}><Link href="/cadastro">Começar como conector <Icon name="arrow"/></Link><Link href="/empreendedores">Integrar minha empresa</Link></div></div>
       </section>
     </main>
 
-    <footer className={styles.footer}><div><NetworkMark inverse/><p>Transformamos confiança em oportunidades rastreáveis.</p></div><div><Link href="/privacidade">Privacidade</Link><Link href="/termos">Termos</Link><Link href="/entrar">Acessar</Link></div><small>© 2026 Rede Conecta</small></footer>
+    <footer className={styles.footer}><div><NetworkMark inverse/><p>Confiança convertida em oportunidades qualificadas e negócios rastreáveis.</p></div><div><Link href="/privacidade">Privacidade</Link><Link href="/termos">Termos</Link><Link href="/entrar">Acessar</Link></div><small>© 2026 Rede Conecta</small></footer>
   </div>;
 }
