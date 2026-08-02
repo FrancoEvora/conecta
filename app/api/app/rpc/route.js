@@ -18,12 +18,10 @@ const operations = {
   partners: "admin_list_partners",
   upsert_partner: "admin_upsert_partner",
 
-  // Compatibilidade com o painel anterior. As gravações antigas agora geram somente rascunhos.
   catalog: "admin_list_catalog",
   upsert_development: "admin_upsert_development",
   upsert_product_campaign: "admin_upsert_product_campaign",
 
-  // Catálogo profissional: edição, revisão, publicação, mídia, preços e estoque.
   catalog_v2: "admin_catalog_list_v2",
   catalog_preflight: "admin_catalog_preflight",
   catalog_transition: "admin_transition_catalog_entity",
@@ -41,9 +39,9 @@ const operations = {
   import_inventory_units: "admin_import_inventory_units",
   publish_due_catalog: "publish_due_catalog_entities",
 
-  // Compartilhamento social rastreável.
   share_studio_invitation: "get_share_studio_invitation",
   create_social_share: "create_my_social_share_link",
+  register_social_asset_share: "register_my_social_asset_share",
   connector_social_analytics: "connector_social_share_analytics",
   admin_social_analytics: "admin_social_share_analytics",
 
