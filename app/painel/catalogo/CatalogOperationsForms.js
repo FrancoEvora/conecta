@@ -3,48 +3,134 @@
 import { useState } from "react";
 import styles from "./CatalogConsole.module.css";
 import { Field, FormActions, parseJson, request } from "./CatalogShared";
+import { registerExternalProductMedia, uploadProductMedia } from "@/lib/client-product-media";
 
 export function MediaForm({ item, products, campaigns, onClose, onSaved, setToast }) {
   const [busy, setBusy] = useState(false);
+  const [fileName, setFileName] = useState("");
+
   async function submit(event) {
-    event.preventDefault(); setBusy(true);
+    event.preventDefault();
+    setBusy(true);
     try {
       const form = new FormData(event.currentTarget);
+      const productId = String(form.get("product_id") || "");
+      const campaignId = String(form.get("campaign_id") || "");
+      const mediaType = String(form.get("media_type") || "image");
+      const usageScope = String(form.get("usage_scope") || "gallery");
+      const title = String(form.get("title") || "").trim();
+      const altText = String(form.get("alt_text") || "").trim();
+      const sortOrder = Number(form.get("sort_order") || 0);
+      const publicUrl = String(form.get("public_url") || "").trim();
       const file = form.get("file");
-      let upload = null;
+
+      if (!productId) throw new Error("Selecione o produto.");
+
       if (file instanceof File && file.size) {
-        const uploadForm = new FormData();
-        uploadForm.append("file", file);
-        uploadForm.append("bucket", "catalog-media");
-        uploadForm.append("folder", `produtos/${form.get("product_id")}`);
-        const response = await fetch("/api/storage/upload", { method: "POST", body: uploadForm });
-        const payload = await response.json();
-        if (!response.ok) throw new Error(payload.error || "Falha no upload.");
-        upload = payload;
+        await uploadProductMedia({
+          mediaId: item?.id || null,
+          productId,
+          campaignId,
+          file,
+          usageScope,
+          mediaType,
+          title,
+          altText,
+          sortOrder,
+          metadata: item?.metadata || {}
+        });
+      } else {
+        const sourceUrl = publicUrl || item?.public_url || "";
+        const storagePath = item?.storage_path || "";
+        if (!sourceUrl && !storagePath) {
+          throw new Error("Selecione um arquivo ou informe uma URL externa.");
+        }
+        await registerExternalProductMedia({
+          mediaId: item?.id || null,
+          productId,
+          campaignId,
+          mediaType,
+          usageScope,
+          title,
+          altText,
+          sortOrder,
+          publicUrl: sourceUrl,
+          storagePath,
+          mimeType: item?.mime_type || "",
+          fileSize: item?.file_size_bytes || "",
+          width: item?.width_pixels || "",
+          height: item?.height_pixels || "",
+          metadata: item?.metadata || {}
+        });
       }
-      const values = Object.fromEntries(form.entries());
-      delete values.file;
-      values.storage_path = upload?.path || item?.storage_path || "";
-      values.public_url = upload?.publicUrl || values.public_url || item?.public_url || "";
-      values.mime_type = upload?.mimeType || item?.mime_type || "";
-      values.file_size_bytes = upload?.size || item?.file_size_bytes || "";
-      values.metadata = upload?.sha256 ? { sha256: upload.sha256 } : (item?.metadata || {});
-      await request("upsert_product_media", { p_media_id: item?.id || null, p_payload: values });
-      setToast("Mídia salva como rascunho e pronta para revisão."); onSaved(); onClose();
-    } catch (error) { setToast(error.message, true); } finally { setBusy(false); }
+
+      setToast(
+        usageScope === "cover"
+          ? "Imagem principal salva como rascunho. Envie para revisão e publique para usá-la nos convites."
+          : "Mídia salva como rascunho e pronta para revisão."
+      );
+      await onSaved();
+      onClose();
+    } catch (error) {
+      setToast(error.message, true);
+    } finally {
+      setBusy(false);
+    }
   }
+
   return <form className={styles.form} onSubmit={submit}>
     <div className={styles.formGrid}>
-      <Field label="Produto"><select name="product_id" required defaultValue={item?.product_id || ""}><option value="">Selecione</option>{products.map(product => <option key={product.id} value={product.id}>{product.name}</option>)}</select></Field>
-      <Field label="Campanha específica"><select name="campaign_id" defaultValue={item?.campaign_id || ""}><option value="">Uso geral do produto</option>{campaigns.map(campaign => <option key={campaign.id} value={campaign.id}>{campaign.title}</option>)}</select></Field>
-      <Field label="Tipo"><select name="media_type" defaultValue={item?.media_type || "image"}><option value="image">Imagem</option><option value="video">Vídeo</option><option value="document">Documento</option><option value="render">Render</option><option value="map">Mapa</option><option value="floorplan">Planta</option><option value="social_creative">Peça social</option></select></Field>
-      <Field label="Uso"><select name="usage_scope" defaultValue={item?.usage_scope || "gallery"}><option value="cover">Capa</option><option value="gallery">Galeria</option><option value="og">Prévia social</option><option value="feed">Feed</option><option value="story">Story</option><option value="document">Documento</option><option value="general">Geral</option></select></Field>
-      <Field label="Título"><input name="title" defaultValue={item?.title || ""}/></Field>
-      <Field label="Texto alternativo"><input name="alt_text" defaultValue={item?.alt_text || ""}/></Field>
-      <Field label="Ordem"><input name="sort_order" type="number" defaultValue={item?.sort_order || 0}/></Field>
-      <Field label="URL externa"><input name="public_url" type="url" defaultValue={item?.public_url || ""} placeholder="Para vídeos ou arquivos hospedados externamente"/></Field>
+      <Field label="Produto">
+        <select name="product_id" required defaultValue={item?.product_id || ""}>
+          <option value="">Selecione</option>
+          {products.map(product => <option key={product.id} value={product.id}>{product.name}</option>)}
+        </select>
+      </Field>
+      <Field label="Campanha específica">
+        <select name="campaign_id" defaultValue={item?.campaign_id || ""}>
+          <option value="">Uso geral do produto</option>
+          {campaigns.map(campaign => <option key={campaign.id} value={campaign.id}>{campaign.title}</option>)}
+        </select>
+      </Field>
+      <Field label="Tipo">
+        <select name="media_type" defaultValue={item?.media_type || "image"}>
+          <option value="image">Imagem</option>
+          <option value="video">Vídeo</option>
+          <option value="document">Documento</option>
+          <option value="render">Render</option>
+          <option value="map">Mapa</option>
+          <option value="floorplan">Planta</option>
+          <option value="social_creative">Peça social</option>
+        </select>
+      </Field>
+      <Field label="Uso">
+        <select name="usage_scope" defaultValue={item?.usage_scope || "gallery"}>
+          <option value="cover">Imagem principal do produto</option>
+          <option value="gallery">Galeria</option>
+          <option value="og">Prévia dos links</option>
+          <option value="feed">Arte para feed</option>
+          <option value="story">Arte para stories</option>
+          <option value="document">Documento</option>
+          <option value="general">Uso geral</option>
+        </select>
+      </Field>
+      <Field label="Título"><input name="title" defaultValue={item?.title || ""} placeholder="Ex.: Corolla 2016 · imagem principal"/></Field>
+      <Field label="Texto alternativo"><input name="alt_text" defaultValue={item?.alt_text || ""} placeholder="Descreva objetivamente o conteúdo"/></Field>
+      <Field label="Ordem"><input name="sort_order" type="number" min="0" defaultValue={item?.sort_order || 0}/></Field>
+      <Field label="URL externa"><input name="public_url" type="url" defaultValue={item?.public_url || ""} placeholder="Somente quando o arquivo estiver hospedado externamente"/></Field>
     </div>
-    <Field label="Enviar arquivo" hint="JPG, PNG, WEBP, PDF ou MP4 até 4 MB"><input name="file" type="file" accept="image/jpeg,image/png,image/webp,application/pdf,video/mp4"/></Field>
+
+    <Field label={item?.id ? "Substituir arquivo" : "Enviar arquivo"} hint="Imagens até 30 MB são otimizadas automaticamente; PDF e MP4 até 4 MB">
+      <input
+        name="file"
+        type="file"
+        accept="image/jpeg,image/png,image/webp,application/pdf,video/mp4"
+        onChange={event => setFileName(event.target.files?.[0]?.name || "")}
+      />
+    </Field>
+    {fileName && <div className={styles.resultBox}><b>Arquivo selecionado</b><span>{fileName}</span><small>A imagem será redimensionada e comprimida antes do envio, sem alterar o arquivo original.</small></div>}
+    {item?.public_url && !fileName && <div className={styles.resultBox}><b>Mídia atual</b><a href={item.public_url} target="_blank" rel="noreferrer">Abrir arquivo</a></div>}
+
     <FormActions onClose={onClose} busy={busy}/>
   </form>;
 }

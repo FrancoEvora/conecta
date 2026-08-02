@@ -36,6 +36,15 @@ function safePart(value, fallback = "arquivo") {
     .slice(0, 100) || fallback;
 }
 
+function safeFolder(value) {
+  const parts = String(value || "geral")
+    .split("/")
+    .map(part => safePart(part, ""))
+    .filter(Boolean)
+    .slice(0, 5);
+  return parts.length ? parts.join("/") : "geral";
+}
+
 function detectedMime(bytes) {
   if (bytes.length >= 4 && bytes[0] === 0xff && bytes[1] === 0xd8 && bytes[2] === 0xff) return "image/jpeg";
   if (bytes.length >= 8 && bytes.subarray(0, 8).equals(Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]))) return "image/png";
@@ -65,7 +74,7 @@ export async function POST(request) {
     const form = await request.formData();
     const file = form.get("file");
     const bucket = String(form.get("bucket") || "");
-    const folder = safePart(form.get("folder") || "geral", "geral");
+    const folder = safeFolder(form.get("folder"));
     const rule = bucketRules[bucket];
 
     if (!(file instanceof File) || !rule) {
@@ -80,7 +89,7 @@ export async function POST(request) {
 
     if (file.size <= 0 || file.size > MAX_UPLOAD_BYTES) {
       return NextResponse.json({
-        error: "O arquivo deve ter no máximo 4 MB. Para vídeos maiores, utilize uma URL externa aprovada."
+        error: "O arquivo preparado deve ter no máximo 4 MB. Imagens maiores são otimizadas automaticamente pelo formulário; para vídeos ou documentos maiores, use uma URL externa."
       }, { status: 400 });
     }
 
@@ -100,7 +109,12 @@ export async function POST(request) {
     const sha256 = crypto.createHash("sha256").update(buffer).digest("hex");
     const path = `${context.organization_id}/${folder}/${crypto.randomUUID()}-${safeName}`;
     const uploadFile = new File([buffer], safeName, { type: signatureMime });
-    await storageUpload({ bucket, path, file: uploadFile, accessToken: session.accessToken });
+    await storageUpload({
+      bucket,
+      path,
+      file: uploadFile,
+      accessToken: session.accessToken
+    });
 
     const response = NextResponse.json({
       ok: true,
@@ -114,8 +128,12 @@ export async function POST(request) {
     if (session.refreshedSession) applySessionCookies(response, session.refreshedSession);
     return response;
   } catch (error) {
-    const message = String(error?.message || "Não foi possível enviar o arquivo.");
-    const status = /permission|denied/i.test(message) ? 403 : 500;
-    return NextResponse.json({ error: message.replaceAll("_", " ") }, { status });
+    const raw = String(error?.message || "Não foi possível enviar o arquivo.");
+    const normalized = raw.replaceAll("_", " ");
+    const status = /permission|denied|row-level security/i.test(normalized) ? 403 : /invalid|format|size|payload/i.test(normalized) ? 400 : 500;
+    const message = /row-level security/i.test(normalized)
+      ? "O armazenamento recusou o arquivo por uma regra de segurança. Atualize a página e tente novamente."
+      : normalized;
+    return NextResponse.json({ error: message }, { status });
   }
 }

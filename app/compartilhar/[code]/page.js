@@ -8,7 +8,7 @@ import { getServerUser } from "@/lib/session";
 export const dynamic = "force-dynamic";
 export const metadata = {
   title: "Estúdio de compartilhamento",
-  description: "Crie publicações rastreáveis para WhatsApp, Instagram e redes sociais.",
+  description: "Compartilhe links rastreáveis ou publique artes profissionais no Instagram Feed e Stories.",
   robots: { index: false, follow: false }
 };
 
@@ -40,9 +40,9 @@ export default async function ShareStudioPage({ params }) {
     <main>
       <section className="page-hero page-hero--compact">
         <div className="container">
-          <span className="eyebrow">Compartilhamento rastreável</span>
-          <h1>Uma mensagem pessoal. Uma imagem profissional. <em>Resultados mensuráveis.</em></h1>
-          <p>Compartilhe no direct, publique no feed ou escolha outro canal. Cada publicação recebe um endereço exclusivo e uma prévia com a principal imagem do produto.</p>
+          <span className="eyebrow">Compartilhamento profissional</span>
+          <h1>Direct com rastreamento. Feed e Stories com a <em>imagem principal do produto.</em></h1>
+          <p>Escolha todas as opções no mesmo estúdio. WhatsApp, Direct e mensageiros usam o convite oficial rastreável; Instagram Feed e Stories recebem a arte diretamente, sem gerar link intermediário.</p>
         </div>
       </section>
       <section className="section">
