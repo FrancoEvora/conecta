@@ -5,7 +5,8 @@ import { useEffect } from "react";
 const routes = {
   "Equipe e acessos": "/painel/acessos",
   "Produtos": "/painel/catalogo",
-  "Leads e CRM": "/painel/sdr"
+  "Leads e CRM": "/painel/sdr",
+  "Financeiro": "/painel/financeiro"
 };
 
 function replaceButtonLabel(button, nextLabel) {
@@ -30,6 +31,7 @@ export default function ProfessionalAdminRedirector() {
         const text = button.textContent?.trim();
         if (text === "Empreendimentos") replaceButtonLabel(button, "Produtos");
         if (text === "Leads e CRM") button.dataset.professionalDestination = routes["Leads e CRM"];
+        if (text === "Financeiro") button.dataset.professionalDestination = routes.Financeiro;
       });
     }
 
