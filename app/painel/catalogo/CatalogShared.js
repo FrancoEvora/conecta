@@ -4,16 +4,28 @@ import { Icon } from "@/components/UI";
 import styles from "./CatalogConsole.module.css";
 
 export const workflowLabel = {
-  draft: "Rascunho", in_review: "Em revisão", approved: "Aprovado", scheduled: "Agendado",
-  published: "Publicado", paused: "Pausado", archived: "Arquivado", rejected: "Rejeitado",
-  expired: "Expirado", available: "Disponível", reserved: "Reservado", sold: "Vendido",
-  blocked: "Bloqueado", unavailable: "Indisponível", active: "Ativo", planning: "Planejamento"
+  draft: "Rascunho",
+  in_review: "Em revisão",
+  approved: "Aprovado",
+  scheduled: "Agendado",
+  published: "Publicado",
+  paused: "Pausado",
+  archived: "Arquivado",
+  rejected: "Rejeitado",
+  expired: "Expirado",
+  available: "Disponível",
+  reserved: "Reservado",
+  sold: "Vendido",
+  blocked: "Bloqueado",
+  unavailable: "Indisponível",
+  active: "Ativo",
+  planning: "Planejamento"
 };
 
 export const tabs = [
-  ["overview", "Visão geral", "chart"],
-  ["developments", "Empreendimentos", "building"],
   ["products", "Produtos", "home"],
+  ["overview", "Visão geral", "chart"],
+  ["developments", "Estruturas imobiliárias", "building"],
   ["campaigns", "Campanhas", "target"],
   ["media", "Mídia", "link"],
   ["prices", "Preços", "money"],
@@ -22,7 +34,12 @@ export const tabs = [
 ];
 
 export function slugify(value) {
-  return String(value || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+  return String(value || "")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-|-$/g, "");
 }
 
 export function date(value) {
@@ -45,20 +62,29 @@ export function parseJson(text, fallback = {}) {
 
 export function parseCsv(text) {
   const rows = [];
-  let row = [], cell = "", quoted = false;
+  let row = [];
+  let cell = "";
+  let quoted = false;
+
   for (let index = 0; index < text.length; index += 1) {
     const char = text[index];
     const next = text[index + 1];
-    if (char === '"' && quoted && next === '"') { cell += '"'; index += 1; }
-    else if (char === '"') quoted = !quoted;
-    else if (char === "," && !quoted) { row.push(cell.trim()); cell = ""; }
-    else if ((char === "\n" || char === "\r") && !quoted) {
+    if (char === '"' && quoted && next === '"') {
+      cell += '"';
+      index += 1;
+    } else if (char === '"') quoted = !quoted;
+    else if (char === "," && !quoted) {
+      row.push(cell.trim());
+      cell = "";
+    } else if ((char === "\n" || char === "\r") && !quoted) {
       if (char === "\r" && next === "\n") index += 1;
-      row.push(cell.trim()); cell = "";
+      row.push(cell.trim());
+      cell = "";
       if (row.some(value => value !== "")) rows.push(row);
       row = [];
     } else cell += char;
   }
+
   row.push(cell.trim());
   if (row.some(value => value !== "")) rows.push(row);
   if (rows.length < 2) return [];
@@ -114,6 +140,7 @@ export function EntityActions({ type, item, permissions, onEdit, onRun, onPrefli
   const canApprove = permissions.approve;
   const canPublish = permissions.publish;
   const status = item.workflow_status || "draft";
+
   return <div className={styles.actions}>
     {canEdit && !["archived"].includes(status) && <button onClick={() => onEdit(item)}>{status === "published" ? "Editar nova versão" : "Editar"}</button>}
     <button onClick={() => onPreflight(type, item.id)}>Pré-validação</button>
