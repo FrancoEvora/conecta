@@ -1,0 +1,3 @@
+- Instagram feed post creative with tracked link
+- Product-image social preview
+- Broker activation without mandatory e-mail confirmation
