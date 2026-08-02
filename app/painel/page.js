@@ -25,11 +25,12 @@ export default async function ConectaOSPage() {
   try { context = await rpc("get_my_app_context", {}, { accessToken: session.accessToken }); }
   catch { redirect("/api/auth/logout"); }
 
+  if (context.portal_kind === "connector" && context.profile_status === "active") redirect("/painel/conector");
+  if (context.portal_kind === "broker" && context.profile_status === "active") redirect("/painel/especialista");
+
   let snapshot = {};
   if (context.portal_kind === "staff") snapshot = await safeRpc("admin_dashboard_summary", {}, session.accessToken, {});
-  if (context.portal_kind === "connector") snapshot = await safeRpc("connector_portal_snapshot", {}, session.accessToken, {});
   if (context.portal_kind === "partner") snapshot = await safeRpc("partner_portal_snapshot", {}, session.accessToken, {});
-  if (context.portal_kind === "broker") snapshot = await safeRpc("broker_portal_snapshot", {}, session.accessToken, {});
 
   const products = await safeRpc("list_public_products", {}, session.accessToken, []);
 
