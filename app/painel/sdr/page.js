@@ -1,11 +1,11 @@
 import { redirect } from "next/navigation";
 import { rpc } from "@/lib/supabase";
 import { getServerUser } from "@/lib/session";
-import SdrConsole from "./SdrConsole";
+import VisibleSdrConsole from "./VisibleSdrConsole";
 
 export const metadata = {
-  title: "Central SDR · Rede Conecta",
-  description: "Qualificação preliminar e distribuição de leads da Rede Conecta.",
+  title: "Distribuição de atendimentos · Rede Conecta",
+  description: "Qualificação SDR e encaminhamento manual ou automático para vendedores e especialistas.",
   robots: { index: false, follow: false }
 };
 export const dynamic = "force-dynamic";
@@ -29,5 +29,5 @@ export default async function SdrPage() {
   if (!permitted) redirect("/painel");
 
   const data = await rpc("admin_sdr_console", { p_limit: 500 }, { accessToken: session.accessToken });
-  return <SdrConsole context={context} initialData={data}/>;
+  return <VisibleSdrConsole context={context} initialData={data}/>;
 }
