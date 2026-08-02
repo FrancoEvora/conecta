@@ -113,9 +113,28 @@ const PRODUCT_TYPES = {
   outros: [["other", "Outro produto ou serviço"]]
 };
 
+const STORAGE_TYPES = {
+  imoveis: "real_estate",
+  veiculos: "vehicle",
+  perfumaria: "beauty",
+  "energia-solar": "solar",
+  agronegocio: "service",
+  turismo: "tourism",
+  seguros: "insurance",
+  consorcios: "consortium",
+  saude: "service",
+  educacao: "education",
+  tecnologia: "service",
+  construcao: "service",
+  moda: "retail",
+  investimentos: "service",
+  outros: "other"
+};
+
 export const PRODUCT_SEGMENTS = COMMERCIAL_SEGMENTS.map(segment => ({
   code: segment.catalogCode,
   connectorCode: segment.code,
+  storageType: STORAGE_TYPES[segment.code] || "other",
   label: segment.label,
   description: segment.description,
   icon: segment.icon,
