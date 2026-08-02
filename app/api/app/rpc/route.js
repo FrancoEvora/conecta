@@ -22,7 +22,6 @@ const operations = {
   catalog: "admin_list_catalog",
   upsert_development: "admin_upsert_development",
   upsert_product_campaign: "admin_upsert_product_campaign",
-
   catalog_v2: "admin_catalog_list_v2",
   catalog_preflight: "admin_catalog_preflight",
   catalog_transition: "admin_transition_catalog_entity",
@@ -39,6 +38,8 @@ const operations = {
   upsert_inventory_unit: "admin_upsert_inventory_unit",
   import_inventory_units: "admin_import_inventory_units",
   publish_due_catalog: "publish_due_catalog_entities",
+  product_financial_rules: "admin_list_product_financial_rules",
+  set_product_financial_rule: "admin_set_product_financial_rule",
 
   share_studio_invitation: "get_share_studio_invitation",
   create_social_share: "create_my_social_share_link",
@@ -61,10 +62,14 @@ const operations = {
   deals: "admin_list_deals",
   upsert_deal: "admin_upsert_deal",
   transition_deal: "admin_transition_deal",
+
   finance: "admin_list_finance",
+  financial_dashboard: "admin_financial_dashboard",
+  record_financial_entry: "admin_record_financial_entry",
   transition_reward: "transition_reward",
   create_payout: "create_payout_batch",
   transition_payout: "transition_payout",
+
   reconciliation: "admin_list_reconciliation",
   create_sales_batch: "admin_create_sales_batch",
   add_sales_row: "admin_add_sales_row",
@@ -74,7 +79,9 @@ const operations = {
   audit: "admin_list_audit",
   settings: "admin_list_settings",
   set_setting: "admin_set_setting",
+
   connector_snapshot: "connector_portal_snapshot",
+  connector_mark_notification_read: "connector_mark_notification_read",
   partner_snapshot: "partner_portal_snapshot",
   broker_snapshot: "broker_portal_snapshot",
   accept_partner_terms: "partner_accept_non_circumvention_terms",
