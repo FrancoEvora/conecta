@@ -41,6 +41,7 @@ const operations = {
   product_financial_rules: "admin_list_product_financial_rules",
   set_product_financial_rule: "admin_set_product_financial_rule",
   specialist_financial_rules: "admin_list_specialist_financial_rules",
+  specialist_financial_catalog: "admin_specialist_financial_catalog",
   set_specialist_financial_rule: "admin_set_specialist_financial_rule",
 
   share_studio_invitation: "get_share_studio_invitation",
